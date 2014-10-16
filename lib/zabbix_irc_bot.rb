@@ -8,9 +8,10 @@ require "zabbix_irc_bot/configuration"
 require "zabbix_irc_bot/cli"
 
 require "zabbix_irc_bot/zabbix/connection"
-require 'zabbix_irc_bot/zabbix/resource'
+require 'zabbix_irc_bot/zabbix/resource/base'
 require 'zabbix_irc_bot/zabbix/event'
 require 'zabbix_irc_bot/zabbix/trigger'
+require 'zabbix_irc_bot/zabbix/host'
 
 module ZabbixIrcBot
 end

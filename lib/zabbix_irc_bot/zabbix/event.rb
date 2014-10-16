@@ -1,27 +1,23 @@
 module ZabbixIrcBot
   module Zabbix
-    class Event < Resource
-      def self.recent include_related_object: false, include_hosts: false
+    class Event < Resource::Base
+      has_many :hosts
+
+      def self.recent options={}
         params = {
             acknowledged: false,
-            time_from: ZabbixIrcBot.config.notify_about_avents_older_than.ago.utc.to_i
-        }
+            time_from: ZabbixIrcBot.config.notify_about_avents_older_than.ago.utc.to_i,
+            priority_from: 0
+        }.merge(options)
 
-        params[:selectHosts] = :extend if include_hosts
-        params[:selectRelatedObject] = :extend if include_related_object
-
-        res = api.event.get params
-        res.collect do |e|
-          Event.new(e)
-        end
+        priority_from = params.delete(:priority_from)
+        events = get params
+        events.find_all{|e| e.priority >= priority_from }
       end
 
       attr_reader :attrs
 
-      def initialize attrs
-        @attrs = ActiveSupport::HashWithIndifferentAccess.new attrs
-        raise AttributeError, "attribute `eventid` not found, propably not an Event" unless @attrs.key? :eventid
-      end
+      delegate :priority, :priority_code, to: :related_object
 
       def related_object
         raise AttributeError, "`source` attribute required" if @attrs[:source].blank?
@@ -51,15 +47,36 @@ module ZabbixIrcBot
         end
       end
 
+      def message
+        desc = related_object.description
+        if desc.include?("{HOST.NAME}")
+          desc.sub("{HOST.NAME}", hosts.collect(&:host).join(', '))
+        else
+          "#{desc} on #{hosts.collect(&:host).join(', ')}"
+        end
+      end
+
+      def label
+        format_label "%t [%p] %m"
+      end
+
+      def format_label fmt
+        fmt.gsub("%p", "#{priority_code}").
+            gsub("%P", "#{priority}").
+            gsub("%t", "#{created_at.to_formatted_s(:short)}").
+            gsub("%m", "#{message}")
+      end
+
       private
 
       def determine_related_object
         case @attrs[:object].to_i
         when 0
           @attrs[:relatedObject] ? Trigger.new(@attrs[:relatedObject]) : Trigger.find(@attrs[:objectid])
+        else
+          raise StandardError, "related object #{@attrs[:object].to_i} not implemented yet"
         end
       end
-
     end
   end
 end

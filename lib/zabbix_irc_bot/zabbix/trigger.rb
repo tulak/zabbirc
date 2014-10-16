@@ -1,20 +1,22 @@
 module ZabbixIrcBot
   module Zabbix
-    class Trigger < Resource
-      def self.find id
-        res = api.trigger.get triggerids: id
-        if res.size == 0
-          nil
-        elsif res.size > 1
-          raise StandardError, "Trigger ID is not unique"
-        else
-          self.new res.first
-        end
+    class Trigger < Resource::Base
+      PRIORITIES = {
+          0 => :not_classified,
+          1 => :information,
+          2 => :warning,
+          3 => :average,
+          4 => :high,
+          5 => :disaster
+      }
+      has_many :hosts
+
+      def priority
+        super.to_i
       end
 
-      def initialize attrs
-        @attrs = ActiveSupport::HashWithIndifferentAccess.new attrs
-        raise AttributeError, "attribute `triggerid` not found, propably not an Event" unless @attrs.key? :triggerid
+      def priority_code
+        PRIORITIES[priority]
       end
     end
   end

@@ -2,7 +2,7 @@ require 'active_support/configurable'
 
 module ZabbixIrcBot
   def self.configure(&block)
-    yield @config ||= ZabbixIrcBot::Configuration.new
+    block.call(@config ||= ZabbixIrcBot::Configuration.new)
   end
 
   def self.config
@@ -32,6 +32,6 @@ module ZabbixIrcBot
   # this is ugly. why can't we pass the default value to config_accessor...?
   configure do |config|
     config.events_check_interval = 5.minutes
-    config.notify_about_avents_older_than = 1.day
+    config.notify_about_avents_older_than = 5.minutes
   end
 end

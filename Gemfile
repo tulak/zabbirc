@@ -1,6 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'pry'
 gem 'activesupport', '~> 4.1.6'
 gem 'thor', '~> 0.19.1'
 
@@ -13,4 +12,6 @@ gem 'zabbix-client', '~> 0.1.0'
 
 group :development do
   gem 'zabbix_irc_bot', path: File.expand_path(File.dirname(__FILE__))
+  gem 'pry'
+  gem 'pry-doc'
 end
