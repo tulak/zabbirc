@@ -1,6 +1,6 @@
 require 'thor'
 
-module ZabbixIrcBot
+module Zabbirc
   class CLI < Thor
   end
 end

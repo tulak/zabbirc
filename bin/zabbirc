@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+require 'zabbirc'
+
+require_relative '../config/config'
+
+s = Zabbirc::Service.new
+s.start
+
+loop do
+  sleep 1
+end

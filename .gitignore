@@ -1,8 +1,8 @@
-# Created by .gitignore support plugin (hsz.mobi)
-### Ruby template
+## Ruby
 *.gem
 *.rbc
 .idea/
+.env
 /config/
 /.config
 /coverage/

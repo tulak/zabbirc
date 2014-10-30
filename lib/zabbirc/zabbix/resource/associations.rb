@@ -1,4 +1,4 @@
-module ZabbixIrcBot
+module Zabbirc
   module Zabbix
     module Resource
       module Associations
@@ -6,10 +6,10 @@ module ZabbixIrcBot
           define_method name do
             @associations ||= ActiveSupport::HashWithIndifferentAccess.new
             @associations[name] ||= begin
-              assoc_class = name.to_s.singularize.camelize.constantize
+              assoc_class = Zabbix.const_get(name.to_s.singularize.camelize)
               hash_data = @attrs[name]
               if hash_data.blank?
-                this = self.class.find id, selectHosts: :extend
+                this = self.class.find id, :"select#{name.to_s.camelize}" => :extend
                 raise StandardError, "zabbix response does not contain #{name}" if this[name].blank?
                 hash_data = this[name]
               end

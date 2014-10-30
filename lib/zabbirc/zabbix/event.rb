@@ -1,4 +1,4 @@
-module ZabbixIrcBot
+module Zabbirc
   module Zabbix
     class Event < Resource::Base
       has_many :hosts
@@ -6,13 +6,14 @@ module ZabbixIrcBot
       def self.recent options={}
         params = {
             acknowledged: false,
-            time_from: ZabbixIrcBot.config.notify_about_avents_older_than.ago.utc.to_i,
+            time_from: Zabbirc.config.notify_about_events_from_last.ago.utc.to_i,
             priority_from: 0
         }.merge(options)
 
         priority_from = params.delete(:priority_from)
         events = get params
-        events.find_all{|e| e.priority >= priority_from }
+        events = events.find_all{|e| e.priority >= priority_from }
+        events.sort{|x,y| x.priority <=> y.priority }
       end
 
       attr_reader :attrs
@@ -47,6 +48,8 @@ module ZabbixIrcBot
         end
       end
 
+      alias_method :state, :value
+
       def message
         desc = related_object.description
         if desc.include?("{HOST.NAME}")
@@ -57,14 +60,16 @@ module ZabbixIrcBot
       end
 
       def label
-        format_label "%t [%p] %m"
+        format_label "|%i| %t [%p] %m - %s"
       end
 
       def format_label fmt
         fmt.gsub("%p", "#{priority_code}").
             gsub("%P", "#{priority}").
             gsub("%t", "#{created_at.to_formatted_s(:short)}").
-            gsub("%m", "#{message}")
+            gsub("%m", "#{message}").
+            gsub("%i", "#{id}").
+            gsub("%s", "#{state}")
       end
 
       private

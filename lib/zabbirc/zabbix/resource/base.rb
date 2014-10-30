@@ -1,7 +1,7 @@
 require_relative 'finders'
 require_relative 'associations'
 
-module ZabbixIrcBot
+module Zabbirc
   module Zabbix
     module Resource
       class Base
@@ -25,7 +25,7 @@ module ZabbixIrcBot
 
         def initialize attrs
           @attrs = ActiveSupport::HashWithIndifferentAccess.new attrs
-          raise AttributeError, "attribute `#{self.class.model_name}id` not found, probably not an Event" unless @attrs.key? :"#{self.class.model_name}id"
+          raise ArgumentError, "attribute `#{self.class.model_name}id` not found, probably not an Event" unless @attrs.key? :"#{self.class.model_name}id"
         end
 
         def id

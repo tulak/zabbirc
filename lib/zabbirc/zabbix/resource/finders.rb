@@ -1,4 +1,4 @@
-module ZabbixIrcBot
+module Zabbirc
   module Zabbix
     module Resource
       module Finders
