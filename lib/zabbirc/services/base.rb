@@ -2,12 +2,11 @@ module Zabbirc
   module Services
     class Base
       LOOP_SLEEP = 10
-      attr_reader :quiting, :running
+      attr_reader :running
 
       def initialize service, cinch_bot
         @service   = service
         @cinch_bot = cinch_bot
-        @quiting   = false
         @running   = false
         @mutex     = Mutex.new
       end
@@ -32,25 +31,28 @@ module Zabbirc
         main_thread = Thread.current
         @thread     = Thread.new do
           begin
-            until @quiting
-              @running = true
-              iterate
-              sleep LOOP_SLEEP
+            loop do
+              Thread.handle_interrupt(StopError => :never) do
+                @running = true
+                iterate
+              end
+              Thread.handle_interrupt(StopError => :immediate) do
+                sleep LOOP_SLEEP
+              end
             end
+          rescue StopError => e
+            # nothing, ensure block sets the variables
           rescue => e
             main_thread.raise e
           ensure
-            @quiting = false
             @running = false
           end
         end
       end
 
       def stop
-        @quiting = true
+        @thread.raise StopError
       end
-
-
     end
   end
 end

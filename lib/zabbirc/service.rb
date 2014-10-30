@@ -4,11 +4,13 @@ module Zabbirc
   class Service
     attr_reader :cinch_bot
     attr_reader :ops, :ops_service
+    attr_reader :running
 
     def initialize
       @semaphores_mutex = Mutex.new
       @semaphores       = Hash.new { |h, k| h[k] = Mutex.new }
-      @ops = {}
+      @ops = OpList.new
+      @running = false
 
       initialize_bot
 
@@ -40,7 +42,9 @@ module Zabbirc
       semaphore.synchronize(&block)
     end
 
-    def start
+    def start join=true
+      return if @running
+      @running = true
       @cinch_bot_thread = Thread.new do
         begin
           @cinch_bot.start
@@ -48,12 +52,22 @@ module Zabbirc
           puts "CHYBAAAAA"
           binding.pry
         end
-
       end
 
+      @cinch_bot_controll_thread = Thread.new do
+        begin
+          sleep
+        rescue StopError
+          @cinch_bot.quit
+        ensure
+          @running = false
+        end
+      end
 
       @ops_service.start
       @events_service.start
+
+      @cinch_bot_thread.join if join
     end
 
     def stop
@@ -63,7 +77,11 @@ module Zabbirc
       puts "ops: #{@ops_service.join}"
       puts "events: #{@events_service.join}"
 
-      @cinch_bot.quit
+      @cinch_bot_controll_thread.raise StopError
+    end
+
+    def join
+      @cinch_bot_thread.join
     end
   end
 end

@@ -4,8 +4,13 @@ require 'zabbirc'
 require_relative '../config/config'
 
 s = Zabbirc::Service.new
-s.start
+running = true
 
-loop do
-  sleep 1
+trap "SIGINT" do
+  s.stop
+  running = false
 end
+
+s.start false
+
+binding.pry

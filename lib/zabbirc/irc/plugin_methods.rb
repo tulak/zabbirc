@@ -83,12 +83,12 @@ module Zabbirc
       ### Authentication and helpers
       def authenticate obj
         nick = get_nick obj
-        bot.zabbirc_service.ops.key? nick
+        bot.zabbirc_service.ops.authenticate nick
       end
 
       def get_op obj
         nick = get_nick obj
-        bot.zabbirc_service.ops[nick]
+        bot.zabbirc_service.ops.get nick
       end
 
       def get_nick obj

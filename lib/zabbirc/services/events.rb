@@ -4,7 +4,7 @@ module Zabbirc
       def iterate
         synchronize do
           recen_events = Zabbix::Event.recent
-          @service.ops.each do |nick, op|
+          @service.ops.each do |op|
             send_notifications op, recen_events
           end if recen_events.any?
         end
@@ -17,7 +17,6 @@ module Zabbirc
           op.notify event
         end
       end
-
     end
   end
 end
