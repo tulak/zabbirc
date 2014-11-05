@@ -10,7 +10,7 @@ module Zabbirc
             priority_from: 0
         }.merge(options)
 
-        priority_from = params.delete(:priority_from)
+        priority_from = Priority.new(params.delete(:priority_from))
         events = get params
         events = events.find_all{|e| e.priority >= priority_from }
         events.sort{|x,y| x.priority <=> y.priority }
@@ -64,8 +64,8 @@ module Zabbirc
       end
 
       def format_label fmt
-        fmt.gsub("%p", "#{priority_code}").
-            gsub("%P", "#{priority}").
+        fmt.gsub("%p", "#{priority.code}").
+            gsub("%P", "#{priority.number}").
             gsub("%t", "#{created_at.to_formatted_s(:short)}").
             gsub("%m", "#{message}").
             gsub("%i", "#{id}").

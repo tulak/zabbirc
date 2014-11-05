@@ -10,7 +10,7 @@ module Zabbirc
       listen_to :leaving, method: :sync_ops
 
       match "settings", method: :show_settings
-      match /settings set ([#_a-zA-Z0-9]+) ([#\-_a-zA-Z0-9]+)/, method: :set_setting
+      match /settings set ([#_a-zA-Z0-9]+)( ([#\-_a-zA-Z0-9]+))?/, method: :set_setting
       match "events", method: :list_events
     end
   end

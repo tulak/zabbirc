@@ -13,7 +13,7 @@ module Zabbirc
         m.reply "#{op.nick}: #{op.setting}"
       end
 
-      def set_setting m, key, value
+      def set_setting m, key, _rest, value
         op = get_op m
         case key
         when "notify"
@@ -28,6 +28,10 @@ module Zabbirc
       end
 
       def set_notify m, op, value
+        if value.nil?
+          m.reply "#{op.nick}: notify allowed values: true, on, 1, false, off, 0"
+          return
+        end
         case value
         when "true", "on", "1"
           op.setting.set :notify, true
@@ -41,20 +45,26 @@ module Zabbirc
       end
 
       def set_events_priority m, op, value
-        case value
-        when *Trigger::PRIORITIES.values.collect(&:to_s)
-          op.setting.set :events_priority, value.to_sym
-        when *Trigger::PRIORITIES.keys.collect(&:to_s)
-          op.setting.set :events_priority, Trigger::PRIORITIES[value.to_i]
-        else
-          m.reply "#{op.nick}: uknown value `#{value}`. Allowed values: #{Trigger::PRIORITIES.values.collect{|v| "`#{v}`"}.join(', ')} or numeric #{Trigger::PRIORITIES.keys.join(", ")} "
+        if value.nil?
+          m.reply "#{op.nick}: events_priority allowed values: #{Priority::PRIORITIES.values.collect{|v| "`#{v}`"}.join(', ')} or numeric #{Priority::PRIORITIES.keys.join(", ")} "
           return
         end
+        begin
+          priority = Priority.new value.to_i
+        rescue ArgumentError
+          m.reply "#{op.nick}: uknown value `#{value}`. Allowed values: #{Priority::PRIORITIES.values.collect{|v| "`#{v}`"}.join(', ')} or numeric #{Priority::PRIORITIES.keys.join(", ")} "
+          return
+        end
+        op.setting.set :events_priority, priority.code
         m.reply "#{op.nick}: setting `events_priority` was set to `#{op.setting.get :events_priority}`"
       end
 
       def set_primary_channel m, op, value
         channel_names = op.channels.collect(&:name)
+        if value.nil?
+          m.reply "#{op.nick}: notify allowed values: #{channel_names.join(", ")}"
+          return
+        end
         case value
         when *channel_names
           op.setting.set :primary_channel, value

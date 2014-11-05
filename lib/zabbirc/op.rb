@@ -17,6 +17,10 @@ module Zabbirc
       @channels.find{|c| c.name == @setting.get(:primary_channel) }
     end
 
+    def events_priority
+      Priority.new @setting.get(:events_priority)
+    end
+
     def add_channel channel
       @setting.fetch :primary_channel, channel
       @channels << channel
@@ -31,7 +35,7 @@ module Zabbirc
     end
 
     def notify event
-      return if event.priority < Zabbix::Trigger::PRIORITIES.key(setting.get(:events_priority).to_sym)
+      return if event.priority < events_priority
       @notified_events ||= {}
       return if @notified_events.key? event.id
       channel = primary_channel
