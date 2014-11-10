@@ -9,6 +9,7 @@ module Zabbirc
       @zabbix_user = zabbix_user
       @irc_user = irc_user
 
+      @notified_events = {}
       @channels = Set.new
       @setting = Setting.new
     end
@@ -17,7 +18,7 @@ module Zabbirc
       @channels.find{|c| c.name == @setting.get(:primary_channel) }
     end
 
-    def events_priority
+    def interesting_priority
       Priority.new @setting.get(:events_priority)
     end
 
@@ -35,7 +36,7 @@ module Zabbirc
     end
 
     def notify event
-      return if event.priority < events_priority
+      return if event.priority < interesting_priority
       @notified_events ||= {}
       return if @notified_events.key? event.id
       channel = primary_channel
@@ -44,7 +45,17 @@ module Zabbirc
       @notified_events[event.id] = Time.now
       clear_notified_events
     end
-    
+
+    def interested_in? event
+      return false unless setting.get :notify
+      return false if @notified_events.key? event.id
+      event.priority >= interesting_priority
+    end
+
+    def event_notified event
+      @notified_events[event.id] = Time.now
+    end
+
     private
 
     def clear_notified_events

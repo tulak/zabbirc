@@ -23,11 +23,9 @@ module Zabbirc
     end
 
     def to_s
-      ret = []
       @options.collect do |k, v|
-        ret << "#{k}: #{v}"
-      end
-      ret.join(", ")
+        "#{k}: #{v}"
+      end.join(", ")
     end
   end
 end

@@ -7,7 +7,9 @@ module Zabbirc
         params = {
             acknowledged: false,
             time_from: Zabbirc.config.notify_about_events_from_last.ago.utc.to_i,
-            priority_from: 0
+            priority_from: 0,
+            selectRelatedObject: :extend,
+            selectHosts: :extend
         }.merge(options)
 
         priority_from = Priority.new(params.delete(:priority_from))

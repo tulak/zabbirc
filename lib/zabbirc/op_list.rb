@@ -2,8 +2,13 @@ module Zabbirc
   class OpList
     include Enumerable
 
-    def initialize
+    def initialize ops=nil
       @ops = {}
+      if ops
+        ops.each do |op|
+          add op
+        end
+      end
     end
 
     def authenticate name
@@ -25,6 +30,18 @@ module Zabbirc
 
     def each &block
       @ops.values.each &block
+    end
+
+    def interested_in event
+      self.class.new(find_all{ |op| op.interested_in? event })
+    end
+
+    def notify event
+      group_by(&:primary_channel).each do |channel, ops|
+        op_targets = ops.collect{|op| "#{op.nick}:" }.join(" ")
+        channel.send "#{op_targets} #{event.label}"
+        ops.each{ |op| op.event_notified event }
+      end
     end
   end
 end

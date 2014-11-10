@@ -3,10 +3,11 @@ module Zabbirc
     class Events < Base
       def iterate
         synchronize do
-          recen_events = Zabbix::Event.recent
-          @service.ops.each do |op|
-            send_notifications op, recen_events
-          end if recen_events.any?
+          recent_events = Zabbix::Event.recent
+
+          recent_events.each do |event|
+            @service.ops.interested_in(event).notify event
+          end
         end
       end
 
