@@ -2,7 +2,7 @@ module Zabbirc
   module Services
     class Ops < Base
       def iterate
-        @mutex.synchronize do
+        synchronize do
           @cinch_bot.channels.each do |channel|
             sync_ops channel
           end

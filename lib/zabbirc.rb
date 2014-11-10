@@ -10,14 +10,19 @@ def require_dir dir
     require f
   end
 end
+
+module Zabbirc
+  def self.synchronize &block
+    @mutex ||= Mutex.new
+    @mutex.synchronize &block
+  end
+end
+
 require_dir "zabbirc/*.rb"
 require_dir "zabbirc/irc/*.rb"
 require 'zabbirc/zabbix/resource/base'
 require_dir "zabbirc/zabbix/*.rb"
 require_dir "zabbirc/services/*.rb"
-
-module Zabbirc
-end
 
 # require_relative "../config/config"
 

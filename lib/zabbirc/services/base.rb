@@ -11,10 +11,8 @@ module Zabbirc
         @mutex     = Mutex.new
       end
 
-      def synchronize
-        @mutex.synchronize do
-          yield
-        end
+      def synchronize &block
+        @mutex.synchronize &block
       end
 
       def join
