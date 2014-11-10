@@ -50,7 +50,8 @@ module Zabbirc
           return
         end
         begin
-          priority = Priority.new value.to_i
+          value = value.to_i if value =~ /^\d+$/
+          priority = Priority.new value
         rescue ArgumentError
           m.reply "#{op.nick}: uknown value `#{value}`. Allowed values: #{Priority::PRIORITIES.values.collect{|v| "`#{v}`"}.join(', ')} or numeric #{Priority::PRIORITIES.keys.join(", ")} "
           return
