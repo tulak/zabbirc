@@ -91,15 +91,19 @@ module Zabbirc
         m.reply msg
       end
 
+      def ops
+        @ops ||= bot.zabbirc_service.ops
+      end
+
       ### Authentication and helpers
       def authenticate obj
         nick = get_nick obj
-        bot.zabbirc_service.ops.authenticate nick
+        ops.authenticate nick
       end
 
       def get_op obj
         nick = get_nick obj
-        bot.zabbirc_service.ops.get nick
+        ops.get nick
       end
 
       def get_nick obj
