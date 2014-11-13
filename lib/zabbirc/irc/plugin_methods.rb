@@ -2,6 +2,27 @@ module Zabbirc
   module Irc
     module PluginMethods
 
+      def host_status m, host
+        return unless authenticate m.user.nick
+        op = get_op m
+        hosts = Zabbix::Host.get(search: {host: host})
+        case hosts.size
+        when 1
+          host = hosts.first
+          triggers = Zabbix::Trigger.get(hostids: host.id, filter: {value: 1}, selectHosts: :extend)
+          triggers = triggers.sort{|x,y| x.priority <=> y.priority }
+          msg = ["#{op.nick}: Host: #{host.name}"]
+          triggers.each do |trigger|
+            msg << "#{op.nick}: #{trigger.label}"
+          end
+          m.reply msg.join("\n")
+        when 2..10
+          m.reply "#{op.nick}: Found #{hosts.size} hosts: #{hosts.collect(&:name).join(', ')}. Be more specific"
+        else
+          m.reply "#{op.nick}: Found #{hosts.size} Be more specific"
+        end
+      end
+
       def sync_ops m, u=nil
         return if u and u.nick == bot.nick
         bot.zabbirc_service.ops_service.iterate
@@ -9,11 +30,13 @@ module Zabbirc
 
       ### Settings
       def show_settings m
+        return unless authenticate m.user.nick
         op = get_op m
         m.reply "#{op.nick}: #{op.setting}"
       end
 
       def set_setting m, key, _rest, value
+        return unless authenticate m.user.nick
         op = get_op m
         case key
         when "notify"

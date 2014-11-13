@@ -11,6 +11,8 @@ trap "SIGINT" do
   running = false
 end
 
-s.start false
+if ARGV[0] != "n"
+  s.start false
+end
 
 binding.pry

@@ -62,16 +62,16 @@ module Zabbirc
       end
 
       def label
-        format_label "|%i| %t [%p] %m - %s"
+        format_label "|%id| %time [%priority-code] %msg - %state"
       end
 
       def format_label fmt
-        fmt.gsub("%p", "#{priority.code}").
-            gsub("%P", "#{priority.number}").
-            gsub("%t", "#{created_at.to_formatted_s(:short)}").
-            gsub("%m", "#{message}").
-            gsub("%i", "#{id}").
-            gsub("%s", "#{state}")
+        fmt.gsub("%priority-code", "#{priority.code}").
+            gsub("%priority-num", "#{priority.number}").
+            gsub("%time", "#{created_at.to_formatted_s(:short)}").
+            gsub("%msg", "#{message}").
+            gsub("%id", "#{id}").
+            gsub("%state", "#{state}")
       end
 
       private
