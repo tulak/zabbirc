@@ -10,6 +10,75 @@ describe Zabbirc::Irc::PluginMethods do
     bot.setup_op mock_nick, mock_user_settings
   end
 
+  describe "#host_status" do
+    before do
+      allow(Zabbirc::Zabbix::Host).to receive(:get).and_return(hosts)
+    end
+
+    context "reporting" do
+      before do
+        allow(Zabbirc::Zabbix::Trigger).to receive(:get).and_return(problem_triggers)
+      end
+      let(:host) { double "Host", id: 1, name: "Host-1" }
+      let(:hosts) { [host] }
+      let(:problem_trigger) { double "Trigger", priority: Zabbirc::Priority.new(1), label: "problem_trigger", value: 1 }
+      context "problem trigger" do
+        let(:problem_triggers) { [problem_trigger] }
+        let(:expected_msg) do
+          msg = ["#{mock_nick}: Host: #{host.name} - status: #{problem_triggers.size} problems"]
+          problem_triggers.each do |trigger|
+            msg << "#{mock_nick}: #{trigger.label}"
+          end
+          msg.join("\n")
+        end
+        it "should report problem" do
+          expect(mock_message).to receive(:reply).with(expected_msg)
+          bot.host_status mock_message, host.name
+        end
+      end
+
+      context "ok trigger" do
+        let(:problem_triggers) { [] }
+        let(:expected_msg) { "#{mock_nick}: Host: #{host.name} - status: OK" }
+        it "should report problem" do
+          expect(mock_message).to receive(:reply).with(expected_msg)
+          bot.host_status mock_message, host.name
+        end
+      end
+    end # context reporting
+
+    context "host identification" do
+      context "no hosts" do
+        let(:hosts) { [] }
+        let(:host_name) { "undefined_host_name" }
+        it "should not found host" do
+          expect(mock_message).to receive(:reply).with("#{mock_nick}: Host not found `#{host_name}`")
+          bot.host_status mock_message, host_name
+        end
+      end
+
+      context "2 - 10 hosts" do
+        let(:host1) { double "Host1", id: 1, name: "host-1" }
+        let(:host2) { double "Host2", id: 2, name: "host-2" }
+        let(:hosts) { [host1, host2] }
+        let(:expected_msg) { "#{mock_nick}: Found #{hosts.size} hosts: #{hosts.collect(&:name).join(', ')}. Be more specific" }
+        it "should print host names" do
+          expect(mock_message).to receive(:reply).with(expected_msg)
+          bot.host_status mock_message, "host"
+        end
+      end
+
+      context "more than 10 hosts" do
+        let(:hosts) { double "HostsArray", size: 11 }
+        let(:expected_msg) { "#{mock_nick}: Found #{hosts.size} Be more specific" }
+        it "should print host names" do
+          expect(mock_message).to receive(:reply).with(expected_msg)
+          bot.host_status mock_message, "host"
+        end
+      end
+    end # context host identification
+  end # context #host_status
+
   describe "#list_events" do
     before do
       allow(Zabbirc::Zabbix::Event).to receive(:recent).and_return(recent_events)
