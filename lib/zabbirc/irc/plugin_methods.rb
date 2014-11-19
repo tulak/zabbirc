@@ -7,13 +7,20 @@ module Zabbirc
         op = get_op m
         hosts = Zabbix::Host.get(search: {host: host})
         case hosts.size
+        when 0
+          m.reply "#{op.nick}: Host not found `#{host}`"
         when 1
           host = hosts.first
           triggers = Zabbix::Trigger.get(hostids: host.id, filter: {value: 1}, selectHosts: :extend)
           triggers = triggers.sort{|x,y| x.priority <=> y.priority }
           msg = ["#{op.nick}: Host: #{host.name}"]
-          triggers.each do |trigger|
-            msg << "#{op.nick}: #{trigger.label}"
+          if triggers.empty?
+            msg[0] << " - status: OK"
+          else
+            msg[0] << " - status: #{triggers.size} problems"
+            triggers.each do |trigger|
+              msg << "#{op.nick}: #{trigger.label}"
+            end
           end
           m.reply msg.join("\n")
         when 2..10
