@@ -14,6 +14,7 @@ module Zabbirc
       match "events", method: :list_events
       match /status ([a-zA-Z0-9\-.]+)/, method: :host_status
       match /latest ([a-zA-Z0-9\-.]+)( (\d+))?/, method: :host_latest
+      match /ack (\d+) (.*)/, method: :acknowledge_event
     end
   end
 end

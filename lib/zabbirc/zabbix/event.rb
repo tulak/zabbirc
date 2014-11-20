@@ -28,6 +28,10 @@ module Zabbirc
         @related_object ||= determine_related_object
       end
 
+      def acknowledge message
+        api.event.acknowledge(eventids: id, message: message)
+      end
+
       def acknowledged?
         acknowledged.to_i == 1
       end

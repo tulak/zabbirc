@@ -8,11 +8,10 @@ module Zabbirc
                                               :"#{model_name}ids" => id
                                           })
           res = api.send(model_name).get options
-          binding.pry if $catch
           if res.size == 0
             nil
           elsif res.size > 1
-            raise StandardError, "#{model_name.camelize} ID is not unique"
+            raise IDNotUniqueError, "#{model_name.camelize} ID `#{id}` is not unique"
           else
             self.new res.first
           end

@@ -2,10 +2,24 @@ module Zabbirc
   module Irc
     module PluginMethods
 
+      def acknowledge_event m, eventid, message
+        return unless authenticate m.user.nick
+        op = get_op m
+        event = find_event m, eventid
+        return unless event
+
+        res = event.acknowledge "#{op.nick}: #{message}"
+        if res["eventids"].include? eventid.to_s
+          m.reply "#{op.nick}: Event `#{event.label}` acknowledged with message: #{message}"
+        else
+          m.reply "#{op.nick}: Could not acknowledge event `#{event.label}`"
+        end
+      end
+
       def host_status m, host
         return unless authenticate m.user.nick
         op = get_op m
-        host = get_host m, host
+        host = find_host m, host
         return unless host
 
         triggers = Zabbix::Trigger.get(hostids: host.id, filter: {value: 1}, selectHosts: :extend)
@@ -26,7 +40,7 @@ module Zabbirc
         limit ||= 8
         return unless authenticate m.user.nick
         op = get_op m
-        host = get_host m, host
+        host = find_host m, host
         return unless host
 
         msg = ["#{op.nick}: Host: #{host.name}"]
@@ -161,7 +175,7 @@ module Zabbirc
 
       private
 
-      def get_host m, host
+      def find_host m, host
         op = get_op m
         hosts = Zabbix::Host.get(search: {host: host})
         case hosts.size
@@ -177,6 +191,20 @@ module Zabbirc
         false
       end
 
+      def find_event m, eventid
+        op = get_op m
+        begin
+          event = Zabbix::Event.find(eventid, {selectHosts: :extend, selectRelatedObject: :extend})
+          if event.nil?
+            m.reply "#{op.nick} Could not find event with id `#{eventid}`"
+            return false
+          end
+          event
+        rescue Zabbix::IDNotUniqueError => e
+          m.reply "#{op.nick} Could not find event: #{e}"
+          false
+        end
+      end
     end
   end
 end

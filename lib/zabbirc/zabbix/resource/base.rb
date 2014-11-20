@@ -3,6 +3,9 @@ require_relative 'associations'
 
 module Zabbirc
   module Zabbix
+
+    IDNotUniqueError = Class.new(StandardError)
+
     module Resource
       class Base
         extend Finders, Associations
