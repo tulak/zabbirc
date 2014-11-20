@@ -5,29 +5,41 @@ module Zabbirc
       def host_status m, host
         return unless authenticate m.user.nick
         op = get_op m
-        hosts = Zabbix::Host.get(search: {host: host})
-        case hosts.size
-        when 0
-          m.reply "#{op.nick}: Host not found `#{host}`"
-        when 1
-          host = hosts.first
-          triggers = Zabbix::Trigger.get(hostids: host.id, filter: {value: 1}, selectHosts: :extend)
-          triggers = triggers.sort{|x,y| x.priority <=> y.priority }
-          msg = ["#{op.nick}: Host: #{host.name}"]
-          if triggers.empty?
-            msg[0] << " - status: OK"
-          else
-            msg[0] << " - status: #{triggers.size} problems"
-            triggers.each do |trigger|
-              msg << "#{op.nick}: #{trigger.label}"
-            end
-          end
-          m.reply msg.join("\n")
-        when 2..10
-          m.reply "#{op.nick}: Found #{hosts.size} hosts: #{hosts.collect(&:name).join(', ')}. Be more specific"
+        host = get_host m, host
+        return unless host
+
+        triggers = Zabbix::Trigger.get(hostids: host.id, filter: {value: 1}, selectHosts: :extend)
+        triggers = triggers.sort{|x,y| x.priority <=> y.priority }
+        msg = ["#{op.nick}: Host: #{host.name}"]
+        if triggers.empty?
+          msg[0] << " - status: OK"
         else
-          m.reply "#{op.nick}: Found #{hosts.size} Be more specific"
+          msg[0] << " - status: #{triggers.size} problems"
+          triggers.each do |trigger|
+            msg << "#{op.nick}: status: #{trigger.label}"
+          end
         end
+        m.reply msg.join("\n")
+      end
+
+      def host_latest m, host, _rest, limit
+        limit ||= 8
+        return unless authenticate m.user.nick
+        op = get_op m
+        host = get_host m, host
+        return unless host
+
+        msg = ["#{op.nick}: Host: #{host.name}"]
+        events = Zabbix::Event.get(hostids: host.id, limit: limit, selectHosts: :extend, selectRelatedObject: :extend, sortfield: :clock, sortorder: "DESC")
+        if events.empty?
+          msg[0] << " - no events found"
+        else
+          msg[0] << " - showing last #{limit} events"
+          events.each do |event|
+            msg << "#{op.nick}: !latest: #{event.label}"
+          end
+        end
+        m.reply msg.join("\n")
       end
 
       def sync_ops m, u=nil
@@ -145,6 +157,24 @@ module Zabbirc
         when String
           obj
         end
+      end
+
+      private
+
+      def get_host m, host
+        op = get_op m
+        hosts = Zabbix::Host.get(search: {host: host})
+        case hosts.size
+        when 0
+          m.reply "#{op.nick}: Host not found `#{host}`"
+        when 1
+          return hosts.first
+        when 2..10
+          m.reply "#{op.nick}: Found #{hosts.size} hosts: #{hosts.collect(&:name).join(', ')}. Be more specific"
+        else
+          m.reply "#{op.nick}: Found #{hosts.size} Be more specific"
+        end
+        false
       end
 
     end

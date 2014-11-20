@@ -13,6 +13,7 @@ module Zabbirc
       match /settings set ([#_a-zA-Z0-9]+)( ([#\-_a-zA-Z0-9]+))?/, method: :set_setting
       match "events", method: :list_events
       match /status ([a-zA-Z0-9\-.]+)/, method: :host_status
+      match /latest ([a-zA-Z0-9\-.]+)( (\d+))?/, method: :host_latest
     end
   end
 end

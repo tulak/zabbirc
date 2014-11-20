@@ -27,7 +27,7 @@ describe Zabbirc::Irc::PluginMethods do
         let(:expected_msg) do
           msg = ["#{mock_nick}: Host: #{host.name} - status: #{problem_triggers.size} problems"]
           problem_triggers.each do |trigger|
-            msg << "#{mock_nick}: #{trigger.label}"
+            msg << "#{mock_nick}: status: #{trigger.label}"
           end
           msg.join("\n")
         end
