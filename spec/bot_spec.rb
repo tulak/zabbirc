@@ -10,6 +10,20 @@ describe Zabbirc::Irc::PluginMethods do
     bot.setup_op mock_nick, mock_user_settings
   end
 
+  describe "#acknowledge_event" do
+    let(:event) { double "Event", id: 1, label: "Event 1 label" }
+    let(:message) { "ack message" }
+    before do
+      allow(event).to receive(:acknowledge).and_return(true)
+      allow(Zabbirc::Zabbix::Event).to receive(:find).and_return(event)
+    end
+
+    it "should acknowledge event" do
+      expect(mock_message).to receive(:reply).with("#{mock_nick}: Event `#{event.label}` acknowledged with message: #{message}")
+      bot.acknowledge_event mock_message, event.id, message
+    end
+  end
+
   describe "#host_status" do
     before do
       allow(Zabbirc::Zabbix::Host).to receive(:get).and_return(hosts)
@@ -78,6 +92,29 @@ describe Zabbirc::Irc::PluginMethods do
       end
     end # context host identification
   end # context #host_status
+
+  context "#host_latest" do
+    let(:host) { double "Host", id: 1, name: "Host1" }
+    let(:hosts) { [host] }
+    let(:event1) { double "Event", label: "Event 1 label" }
+    let(:events) { [event1] }
+    let(:expected_msg) do
+      msg = ["#{mock_nick}: Host: #{host.name} - showing last #{events.size} events"]
+      events.each do |event|
+        msg << "#{mock_nick}: !latest: #{event.label}"
+      end
+      msg.join("\n")
+    end
+    before do
+      allow(Zabbirc::Zabbix::Host).to receive(:get).and_return(hosts)
+      allow(Zabbirc::Zabbix::Event).to receive(:get).and_return(events)
+    end
+
+    it "should print latest events" do
+      expect(mock_message).to receive(:reply).with(expected_msg)
+      bot.host_latest mock_message, "Host1", nil, nil
+    end
+  end
 
   describe "#list_events" do
     before do

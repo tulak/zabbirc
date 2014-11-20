@@ -8,8 +8,7 @@ module Zabbirc
         event = find_event m, eventid
         return unless event
 
-        res = event.acknowledge "#{op.nick}: #{message}"
-        if res["eventids"].include? eventid.to_s
+        if event.acknowledge "#{op.nick}: #{message}"
           m.reply "#{op.nick}: Event `#{event.label}` acknowledged with message: #{message}"
         else
           m.reply "#{op.nick}: Could not acknowledge event `#{event.label}`"
@@ -48,7 +47,7 @@ module Zabbirc
         if events.empty?
           msg[0] << " - no events found"
         else
-          msg[0] << " - showing last #{limit} events"
+          msg[0] << " - showing last #{events.size} events"
           events.each do |event|
             msg << "#{op.nick}: !latest: #{event.label}"
           end

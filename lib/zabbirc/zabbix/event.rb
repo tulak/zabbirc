@@ -29,7 +29,8 @@ module Zabbirc
       end
 
       def acknowledge message
-        api.event.acknowledge(eventids: id, message: message)
+        res = api.event.acknowledge(eventids: id, message: message)
+        res["eventids"].collect(&:to_i).include? id.to_i
       end
 
       def acknowledged?
