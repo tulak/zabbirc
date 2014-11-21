@@ -1,5 +1,4 @@
 require 'active_support/all'
-require 'pry'
 require 'singleton'
 require 'dotenv'
 Dotenv.load
@@ -23,9 +22,3 @@ require_dir "zabbirc/irc/*.rb"
 require 'zabbirc/zabbix/resource/base'
 require_dir "zabbirc/zabbix/*.rb"
 require_dir "zabbirc/services/*.rb"
-
-# require_relative "../config/config"
-
-# include Zabbirc::Zabbix
-# s = Zabbirc::Service.new
-# binding.pry

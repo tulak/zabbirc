@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+case ARGV.size
+when 0
+  install_path = Dir.pwd
+when 1
+  install_path = ARGV[0]
+when 2
+  puts "Too many arguments"
+  exit 1
+end
+
+puts "Installing config file into: #{install_path}"
+templates_path = Pathname.new(File.expand_path(Pathname.new(File.dirname(__FILE__)).join("../templates")))
+
+FileUtils.cp(templates_path.join("zabbirc_config.rb"), install_path)
+puts "Installed"

@@ -34,7 +34,7 @@ module Zabbirc
 
   # this is ugly. why can't we pass the default value to config_accessor...?
   configure do |config|
-    config.events_check_interval = 10
+    config.events_check_interval = 10.seconds
     config.notify_about_events_from_last = 5.minutes
 
     config.irc_server = "irc.freenode.org"

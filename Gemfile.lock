@@ -1,7 +1,12 @@
 PATH
   remote: .
   specs:
-    zabbirc (0.0.0)
+    zabbirc (0.0.1)
+      activesupport (~> 4.1.6, >= 4.1.6)
+      cinch (~> 2.1)
+      dotenv (~> 1.0, >= 1.0.2)
+      pry (~> 0.10, >= 0.10.0)
+      zabbix-client (~> 0.1, >= 0.1.0)
 
 GEM
   remote: https://rubygems.org/
@@ -42,7 +47,6 @@ GEM
       rspec-support (~> 3.1.0)
     rspec-support (3.1.2)
     slop (3.6.0)
-    thor (0.19.1)
     thread_safe (0.3.4)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
@@ -60,6 +64,5 @@ DEPENDENCIES
   pry
   pry-doc
   rspec
-  thor (~> 0.19.1)
   zabbirc!
   zabbix-client (~> 0.1.0)

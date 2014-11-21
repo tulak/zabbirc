@@ -1,18 +1,27 @@
 #!/usr/bin/env ruby
 require 'zabbirc'
+require 'pry'
+this_file = __FILE__
+config_path = File.expand_path(ARGV[0])
 
-require_relative '../config/config'
+unless config_path
+  $stderr.puts "No config path specified"
+  exit false
+end
+unless File.exists?(config_path)
+  $stderr.puts "Could not find config file: #{config_path}"
+  exit false
+end
+
+require_relative config_path
+
+exit false unless Zabbirc::Zabbix::Connection.test_connection
 
 s = Zabbirc::Service.new
-running = true
 
 trap "SIGINT" do
   s.stop
-  running = false
 end
 
-if ARGV[0] != "n"
-  s.start false
-end
-
-binding.pry
+s.start
+sleep 1 while s.running

@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 
 gem 'activesupport', '~> 4.1.6'
-gem 'thor', '~> 0.19.1'
 gem 'dotenv', '~> 1.0.2'
 
 # IRC

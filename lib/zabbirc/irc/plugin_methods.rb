@@ -133,7 +133,6 @@ module Zabbirc
 
       ### Events
       def list_events m
-        # binding.pry
         return unless authenticate m.user.nick
         events = Zabbix::Event.recent
         msg = if events.any?

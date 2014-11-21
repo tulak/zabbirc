@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+require 'pry'
+require 'zabbirc'
+
+require_relative '../config/config'
+
+s = Zabbirc::Service.new
+running = true
+
+trap "SIGINT" do
+  s.stop
+  running = false
+end
+
+if ARGV[0] != "n"
+  s.start false
+end
+
+binding.pry

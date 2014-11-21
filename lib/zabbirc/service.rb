@@ -49,8 +49,7 @@ module Zabbirc
         begin
           @cinch_bot.start
         rescue => e
-          puts "CHYBAAAAA"
-          binding.pry
+          Zabbirc.logger.fatal "Cinch bot start error: #{e}"
         end
       end
 
@@ -74,8 +73,8 @@ module Zabbirc
       @ops_service.stop
       @events_service.stop
 
-      puts "ops: #{@ops_service.join}"
-      puts "events: #{@events_service.join}"
+      Zabbirc.logger.info "Stopping ops service: #{@ops_service.join}"
+      Zabbirc.logger.info "Stopping events service: #{@events_service.join}"
 
       @cinch_bot_controll_thread.raise StopError
     end
