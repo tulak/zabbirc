@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
 
   s.authors     = ["Filip Zachar"]
   s.email       = 'tulak45@gmail.com'
-  s.homepage    = 'http://rubygems.org/gems/zabbirc'
+  s.homepage    = 'https://github.com/tulak/zabbirc'
   s.summary     = "IRC Bot for Zabbix monitoring"
   s.description = "IRC Bot for Zabbix monitoring"
 
