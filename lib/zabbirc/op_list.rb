@@ -22,10 +22,10 @@ module Zabbirc
     end
 
     def add op
-      if exists? op.nick
-        return get(op.nick)
+      if exists? op.login
+        return get(op.login)
       end
-      @ops[op.nick] = op
+      @ops[op.login] = op
     end
 
     def each &block

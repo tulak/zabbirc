@@ -1,9 +1,10 @@
 describe Zabbirc::Irc::PluginMethods do
   # let(:service) { Zabbirc::ServiceMock.new }
   let(:mock_message) { double("Cinch::Message", user: mock_user) }
-  let(:mock_user) { double("Cinch::User", nick: mock_nick) }
+  let(:mock_user) { double("Cinch::User", nick: mock_nick, login: mock_login) }
   let(:bot) { Zabbirc::MockBot.new }
   let(:mock_nick) { "op1" }
+  let(:mock_login) { "op1" }
   let(:mock_user_settings) { nil }
 
   before do

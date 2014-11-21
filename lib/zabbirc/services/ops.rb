@@ -11,17 +11,17 @@ module Zabbirc
 
       private
 
-      def channel_nicks channel
-        channel.users.keys.collect(&:nick)
+      def channel_logins channel
+        channel.users.keys.collect{|u| u.user.sub("~","") }
       end
 
-      def channel_find_user channel, nick
-        channel.users.keys.find { |irc_user| irc_user.nick == nick }
+      def channel_find_user channel, login
+        channel.users.keys.find { |irc_user| irc_user.user.sub("~","") == login }
       end
 
       def sync_ops channel
-        nicks = channel_nicks channel
-        zabbix_users = Zabbix::User.get filter: { alias: nicks }
+        logins = channel_logins channel
+        zabbix_users = Zabbix::User.get filter: { alias: logins }
         zabbix_users.each do |zabbix_user|
           irc_user = channel_find_user channel, zabbix_user.alias
           op = @service.ops.add(Op.new(zabbix_user: zabbix_user, irc_user: irc_user))
@@ -29,7 +29,7 @@ module Zabbirc
         end
 
         @service.ops.each do |op|
-          op.remove_channel channel unless nicks.include? op.nick
+          op.remove_channel channel unless logins.include? op.login
         end
         true
       end

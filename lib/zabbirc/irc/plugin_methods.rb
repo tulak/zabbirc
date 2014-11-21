@@ -2,8 +2,20 @@ module Zabbirc
   module Irc
     module PluginMethods
 
+      def zabbirc_status m
+        ops_msg = ops.collect{|o| "#{o.nick} as #{o.login}"}
+        m.reply("#{m.user.nick}: Identified ops: #{ops_msg.join(", ")}")
+      end
+
+      def acknowledge_event_usage m
+        return unless authenticate m
+        op = get_op m
+        usage = "Usage: !ack <event-id> <ack-message>"
+        m.reply("#{op.nick}: #{usage}")
+      end
+
       def acknowledge_event m, eventid, message
-        return unless authenticate m.user.nick
+        return unless authenticate m
         op = get_op m
         event = find_event m, eventid
         return unless event
@@ -16,7 +28,7 @@ module Zabbirc
       end
 
       def host_status m, host
-        return unless authenticate m.user.nick
+        return unless authenticate m
         op = get_op m
         host = find_host m, host
         return unless host
@@ -37,7 +49,7 @@ module Zabbirc
 
       def host_latest m, host, _rest, limit
         limit ||= 8
-        return unless authenticate m.user.nick
+        return unless authenticate m
         op = get_op m
         host = find_host m, host
         return unless host
@@ -62,13 +74,20 @@ module Zabbirc
 
       ### Settings
       def show_settings m
-        return unless authenticate m.user.nick
+        return unless authenticate m
         op = get_op m
         m.reply "#{op.nick}: #{op.setting}"
       end
 
+      def set_setting_help m
+        return unless authenticate m
+        op = get_op m
+        usage = "Usage: !setting set <setting-name> <setting-value>"
+        m.reply("#{op.nick}: #{usage}")
+      end
+
       def set_setting m, key, _rest, value
-        return unless authenticate m.user.nick
+        return unless authenticate m
         op = get_op m
         case key
         when "notify"
@@ -133,7 +152,7 @@ module Zabbirc
 
       ### Events
       def list_events m
-        return unless authenticate m.user.nick
+        return unless authenticate m
         events = Zabbix::Event.recent
         msg = if events.any?
                 events.collect do |e|
@@ -151,13 +170,13 @@ module Zabbirc
 
       ### Authentication and helpers
       def authenticate obj
-        nick = get_nick obj
-        ops.authenticate nick
+        login = get_login obj
+        ops.authenticate login
       end
 
       def get_op obj
-        nick = get_nick obj
-        ops.get nick
+        login = get_login obj
+        ops.get login
       end
 
       def get_nick obj
@@ -166,6 +185,17 @@ module Zabbirc
           obj.user.nick
         when Cinch::User
           obj.nick
+        when String
+          obj
+        end
+      end
+
+      def get_login obj
+        case obj
+        when Cinch::Message
+          obj.user.user.sub("~","")
+        when Cinch::User
+          obj.user.user.sub("~","")
         when String
           obj
         end
