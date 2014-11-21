@@ -53,10 +53,16 @@ module Zabbirc
         end
       end
 
-      @cinch_bot_controll_thread = Thread.new do
+      @controll_thread = Thread.new do
         begin
           sleep
         rescue StopError
+          @ops_service.stop
+          @events_service.stop
+
+          Zabbirc.logger.info "Stopping ops service: #{@ops_service.join}"
+          Zabbirc.logger.info "Stopping events service: #{@events_service.join}"
+
           @cinch_bot.quit
         ensure
           @running = false
@@ -70,13 +76,7 @@ module Zabbirc
     end
 
     def stop
-      @ops_service.stop
-      @events_service.stop
-
-      Zabbirc.logger.info "Stopping ops service: #{@ops_service.join}"
-      Zabbirc.logger.info "Stopping events service: #{@events_service.join}"
-
-      @cinch_bot_controll_thread.raise StopError
+      @controll_thread.raise StopError
     end
 
     def join

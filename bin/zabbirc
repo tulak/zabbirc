@@ -15,6 +15,7 @@ end
 
 require_relative config_path
 
+Zabbirc.logger # initializes logger
 exit false unless Zabbirc::Zabbix::Connection.test_connection
 
 s = Zabbirc::Service.new
@@ -23,5 +24,9 @@ trap "SIGINT" do
   s.stop
 end
 
+trap "SIGTERM" do
+  s.stop
+end
+
 s.start
-sleep 1 while s.running
+s.join

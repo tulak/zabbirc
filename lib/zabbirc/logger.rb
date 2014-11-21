@@ -1,9 +1,7 @@
 module Zabbirc
   def self.logger
-    synchronize do
-      @logger ||= ::Logger.new(STDERR, 10, 1.megabyte).tap do |logger|
-        logger.formatter = Zabbirc::Logger::Formatter.new
-      end
+    @logger ||= ::Logger.new(STDERR, 10, 1.megabyte).tap do |logger|
+      logger.formatter = Zabbirc::Logger::Formatter.new
     end
   end
 
