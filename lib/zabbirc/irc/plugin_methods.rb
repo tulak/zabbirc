@@ -47,7 +47,7 @@ module Zabbirc
         m.reply msg.join("\n")
       end
 
-      def host_latest m, host, _rest, limit
+      def host_latest m, host, limit
         limit ||= 8
         return unless authenticate m
         op = get_op m
@@ -86,7 +86,7 @@ module Zabbirc
         m.reply("#{op.nick}: #{usage}")
       end
 
-      def set_setting m, key, _rest, value
+      def set_setting m, key, value
         return unless authenticate m
         op = get_op m
         case key

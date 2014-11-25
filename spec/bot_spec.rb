@@ -113,7 +113,7 @@ describe Zabbirc::Irc::PluginMethods do
 
     it "should print latest events" do
       expect(mock_message).to receive(:reply).with(expected_msg)
-      bot.host_latest mock_message, "Host1", nil, nil
+      bot.host_latest mock_message, "Host1", nil
     end
   end
 
@@ -158,7 +158,7 @@ describe Zabbirc::Irc::PluginMethods do
       let(:op) { bot.get_op mock_nick }
       it "should set #{key} setting to #{value}" do
         expect(mock_message).to receive(:reply).with(expected_msg)
-        bot.set_setting mock_message, key, nil, value
+        bot.set_setting mock_message, key, value
         expect(op.setting.get(key)).to eq expected_setting_value
       end
     end
