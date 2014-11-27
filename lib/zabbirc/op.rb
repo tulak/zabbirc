@@ -16,7 +16,12 @@ module Zabbirc
     end
 
     def primary_channel
-      @channels.find{|c| c.name == @setting.get(:primary_channel) }
+      channel = @channels.find{|c| c.name == @setting.get(:primary_channel) }
+      channel || @setting.fetch(:primary_channel, @channels.first)
+    end
+
+    def set_setting setting
+      @setting = setting
     end
 
     def interesting_priority
@@ -24,7 +29,7 @@ module Zabbirc
     end
 
     def add_channel channel
-      @setting.fetch :primary_channel, channel
+      @setting.fetch :primary_channel, channel.name
       @channels << channel
     end
 
@@ -32,7 +37,7 @@ module Zabbirc
       @channels.delete channel
 
       if channel == @setting.get(:primary_channel)
-        @setting.set :primary_channel, @channels.first
+        @setting.set :primary_channel, @channels.first.try(:name)
       end
     end
 

@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 require 'zabbirc'
-require 'pry'
-this_file = __FILE__
 config_path = File.expand_path(ARGV[0])
 
 unless config_path

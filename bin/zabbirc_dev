@@ -1,15 +1,23 @@
 #!/usr/bin/env ruby
 require 'pry'
-require 'zabbirc'
 
+$base_dir = Pathname.new(
+    File.expand_path(
+        Pathname.new(File.dirname(__FILE__)).join("..")
+    )
+)
+# Rewrites runtime directory in development mode
+module Zabbirc
+  RUNTIME_DATA_DIR = $base_dir.join("tmp")
+end
+
+require 'zabbirc'
 require_relative '../config/config'
 
 s = Zabbirc::Service.new
-running = true
 
 trap "SIGINT" do
   s.stop
-  running = false
 end
 
 if ARGV[0] != "n"

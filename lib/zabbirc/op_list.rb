@@ -1,4 +1,5 @@
 module Zabbirc
+  STORED_SETTINGS_FILE = Zabbirc::RUNTIME_DATA_DIR.join("ops_settings.yaml")
   class OpList
     include Enumerable
 
@@ -38,9 +39,32 @@ module Zabbirc
 
     def notify event
       group_by(&:primary_channel).each do |channel, ops|
+        next if channel.nil?
         op_targets = ops.collect{|op| "#{op.nick}:" }.join(" ")
         channel.send "#{op_targets} #{event.label}"
         ops.each{ |op| op.event_notified event }
+      end
+    end
+
+    def dump_settings
+      dump = {}
+      each do |op|
+        dump[op.login] = op.setting
+      end
+
+      file = File.open(STORED_SETTINGS_FILE, "w")
+      file.puts dump.to_yaml
+      file.close
+      true
+    end
+
+    def load_settings
+      return unless File.exists?(STORED_SETTINGS_FILE)
+      stored_settings = YAML.load_file(STORED_SETTINGS_FILE)
+      stored_settings.each do |login, setting|
+        op = get(login)
+        next unless op
+        op.set_setting setting
       end
     end
   end

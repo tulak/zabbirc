@@ -15,7 +15,7 @@ module Zabbirc
           else
             self.new res.first
           end
-        rescue Errno::ETIMEDOUT => e
+        rescue Errno::ETIMEDOUT, Errno::ECONNREFUSED => e
           Zabbirc.logger.error "Zabbix::Resource#find: #{e}"
           nil
         end
@@ -26,7 +26,7 @@ module Zabbirc
           res.collect do |obj|
             self.new obj
           end
-        rescue Errno::ETIMEDOUT => e
+        rescue Errno::ETIMEDOUT, Errno::ECONNREFUSED => e
           Zabbirc.logger.error "Zabbix::Resource#get: #{e}"
           []
         end

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+
 case ARGV.size
 when 0
   install_path = Dir.pwd
@@ -7,6 +8,38 @@ when 1
 when 2
   puts "Too many arguments"
   exit 1
+end
+
+require 'zabbirc'
+require 'pry'
+
+def chown_directory dir
+  puts "Using sudo to chown runtime directory `#{dir}`"
+  system "sudo chown #{Process.uid}:#{Process.gid} #{dir}"
+end
+
+begin
+  unless Dir.exists? Zabbirc::RUNTIME_DATA_DIR
+    puts "Using sudo to create runtime directory #{Zabbirc::RUNTIME_DATA_DIR}"
+    r = system "sudo mkdir #{Zabbirc::RUNTIME_DATA_DIR}"
+    if r
+      puts "Runtime directory #{Zabbirc::RUNTIME_DATA_DIR} created"
+      chown_directory Zabbirc::RUNTIME_DATA_DIR
+    else
+      puts "Could not create runtime directory #{Zabbirc::RUNTIME_DATA_DIR}"
+      puts "Please create this directory and check if it's accesible by user, that will run zabbirc bot"
+    end
+  end
+
+  # Test if runtime directory is accessible
+  f = File.open(Zabbirc::RUNTIME_DATA_DIR.join("test"), "w")
+  f.puts "test"
+  f.close
+  FileUtils.rm f.path
+rescue Errno::EACCES
+  unless chown_directory Zabbirc::RUNTIME_DATA_DIR
+    puts "Could not make runtime directory `#{Zabbirc::RUNTIME_DATA_DIR}` accessible"
+  end
 end
 
 puts "Installing config file into: #{install_path}"

@@ -57,6 +57,7 @@ module Zabbirc
         begin
           sleep
         rescue StopError
+          pre_stop_script
           @ops_service.stop
           @events_service.stop
 
@@ -73,6 +74,12 @@ module Zabbirc
       @events_service.start
 
       @cinch_bot_thread.join if join
+    end
+
+    def pre_stop_script
+      @ops.dump_settings
+    rescue => e
+      Zabbirc.logger.error "Exception `#{e}` while running pre_stop_script"
     end
 
     def stop
