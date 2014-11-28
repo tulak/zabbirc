@@ -27,7 +27,8 @@ module Zabbirc
       @@op_ids ||= 0
       zabbix_user = Zabbix::User.new(alias: name, userid: (@@op_ids+=1))
       irc_user = double "IrcUser", nick: name, user: name
-      op = Op.new(zabbix_user: zabbix_user, irc_user: irc_user)
+      op = Op.new(zabbix_user)
+      op.set_irc_user irc_user
       settings.each do |key, value|
         op.setting.set key, value
       end if settings

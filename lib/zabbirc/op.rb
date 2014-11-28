@@ -2,17 +2,24 @@ module Zabbirc
   class Op
 
     attr_reader :channels, :setting, :nick, :login
-    def initialize zabbix_user: nil, irc_user: nil
+    def initialize zabbix_user
       raise ArgumentError, 'zabbix_user' if zabbix_user.nil?
-      raise ArgumentError, 'irc_user' if irc_user.nil?
       @login= zabbix_user.alias
-      @nick = irc_user.nick
       @zabbix_user = zabbix_user
-      @irc_user = irc_user
 
       @notified_events = {}
       @channels = Set.new
       @setting = Setting.new
+    end
+
+    def set_irc_user irc_user
+      @irc_user = irc_user
+      @nick = irc_user.nick
+    end
+
+    def unset_irc_user
+      @irc_user = nil
+      @nick = nil
     end
 
     def primary_channel
@@ -39,17 +46,9 @@ module Zabbirc
       if channel == @setting.get(:primary_channel)
         @setting.set :primary_channel, @channels.first.try(:name)
       end
-    end
 
-    def notify event
-      return if event.priority < interesting_priority
-      @notified_events ||= {}
-      return if @notified_events.key? event.id
-      channel = primary_channel
-      return unless channel
-      channel.send "#{@nick}: #{event.label}"
-      @notified_events[event.id] = Time.now
-      clear_notified_events
+      unset_irc_user if @channels.empty?
+      true
     end
 
     def interested_in? event

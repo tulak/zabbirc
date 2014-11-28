@@ -3,20 +3,20 @@ module Zabbirc
     module PluginMethods
 
       def zabbirc_status m
-        ops_msg = ops.collect{|o| "#{o.nick} as #{o.login}"}
+        ops_msg = ops.find_all{|o| o.nick.present? }.collect{|o| "#{o.nick} as #{o.login}"}
         m.reply("#{m.user.nick}: Identified ops: #{ops_msg.join(", ")}")
       end
 
       def acknowledge_event_usage m
-        return unless authenticate m
-        op = get_op m
+        op = authenticate m
+        return unless op
         usage = "Usage: !ack <event-id> <ack-message>"
         m.reply("#{op.nick}: #{usage}")
       end
 
       def acknowledge_event m, eventid, message
-        return unless authenticate m
-        op = get_op m
+        op = authenticate m
+        return unless op
         event = find_event m, eventid
         return unless event
 
@@ -28,8 +28,8 @@ module Zabbirc
       end
 
       def host_status m, host
-        return unless authenticate m
-        op = get_op m
+        op = authenticate m
+        return unless op
         host = find_host m, host
         return unless host
 
@@ -49,8 +49,8 @@ module Zabbirc
 
       def host_latest m, host, limit
         limit ||= 8
-        return unless authenticate m
-        op = get_op m
+        op = authenticate m
+        return unless op
         host = find_host m, host
         return unless host
 
@@ -74,21 +74,21 @@ module Zabbirc
 
       ### Settings
       def show_settings m
-        return unless authenticate m
-        op = get_op m
+        op = authenticate m
+        return unless op
         m.reply "#{op.nick}: #{op.setting}"
       end
 
       def set_setting_help m
-        return unless authenticate m
-        op = get_op m
+        op = authenticate m
+        return unless op
         usage = "Usage: !setting set <setting-name> <setting-value>"
         m.reply("#{op.nick}: #{usage}")
       end
 
       def set_setting m, key, value
-        return unless authenticate m
-        op = get_op m
+        op = authenticate m
+        return unless op
         case key
         when "notify"
           set_notify m, op, value
@@ -152,14 +152,15 @@ module Zabbirc
 
       ### Events
       def list_events m
-        return unless authenticate m
+        op = authenticate m
+        return unless op
         events = Zabbix::Event.recent
         msg = if events.any?
                 events.collect do |e|
-                  "#{m.user.nick}: #{e.label}"
+                  "#{op.nick}: #{e.label}"
                 end.join("\n")
               else
-                "#{m.user.nick}: No last events"
+                "#{op.nick}: No last events"
               end
         m.reply msg
       end
@@ -169,26 +170,13 @@ module Zabbirc
       end
 
       ### Authentication and helpers
-      def authenticate obj
-        login = get_login obj
-        ops.authenticate login
-      end
 
       def get_op obj
         login = get_login obj
         ops.get login
       end
 
-      def get_nick obj
-        case obj
-        when Cinch::Message
-          obj.user.nick
-        when Cinch::User
-          obj.nick
-        when String
-          obj
-        end
-      end
+      alias_method :authenticate, :get_op
 
       def get_login obj
         case obj

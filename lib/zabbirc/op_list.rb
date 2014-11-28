@@ -29,6 +29,17 @@ module Zabbirc
       @ops[op.login] = op
     end
 
+    def remove op
+      case op
+      when String
+        @ops[op] = nil
+      when Op
+        @ops[op.login] = nil
+      else
+        raise ArgumentError, "Stirng or Op expected"
+      end
+    end
+
     def each &block
       @ops.values.each &block
     end
@@ -39,17 +50,21 @@ module Zabbirc
 
     def notify event
       group_by(&:primary_channel).each do |channel, ops|
-        next if channel.nil?
-        op_targets = ops.collect{|op| "#{op.nick}:" }.join(" ")
-        channel.send "#{op_targets} #{event.label}"
-        ops.each{ |op| op.event_notified event }
+        begin
+          next if channel.nil?
+          op_targets = ops.collect{|op| "#{op.nick}:" }.join(" ")
+          channel.send "#{op_targets} #{event.label}"
+          ops.each{ |op| op.event_notified event }
+        rescue =>e
+          binding.pry
+        end
       end
     end
 
     def dump_settings
       dump = {}
       each do |op|
-        dump[op.login] = op.setting
+        dump[op.login] = op.setting.to_hash
       end
 
       file = File.open(STORED_SETTINGS_FILE, "w")
@@ -64,7 +79,7 @@ module Zabbirc
       stored_settings.each do |login, setting|
         op = get(login)
         next unless op
-        op.set_setting setting
+        op.setting.restore setting
       end
     end
   end

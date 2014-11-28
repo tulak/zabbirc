@@ -45,6 +45,9 @@ module Zabbirc
     def start join=true
       return if @running
       @running = true
+
+      pre_start_script
+
       @cinch_bot_thread = Thread.new do
         begin
           @cinch_bot.start
@@ -80,6 +83,13 @@ module Zabbirc
       @ops.dump_settings
     rescue => e
       Zabbirc.logger.error "Exception `#{e}` while running pre_stop_script"
+    end
+
+    def pre_start_script
+      @ops_service.iterate
+      @ops.load_settings
+    rescue => e
+      Zabbirc.logger.error "Exception `#{e}` while running pre_start_script"
     end
 
     def stop
