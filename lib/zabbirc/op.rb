@@ -10,6 +10,11 @@ module Zabbirc
       @notified_events = {}
       @channels = Set.new
       @setting = Setting.new
+      @mutex = Mutex.new
+    end
+
+    def synchronize &block
+      @mutex.synchronize &block
     end
 
     def set_irc_user irc_user
@@ -23,12 +28,14 @@ module Zabbirc
     end
 
     def primary_channel
-      channel = @channels.find{|c| c.name == @setting.get(:primary_channel) }
-      channel || @setting.fetch(:primary_channel, @channels.first)
-    end
-
-    def set_setting setting
-      @setting = setting
+      synchronize do
+        return nil if @channels.empty?
+        channel = @channels.find{|c| c.name == @setting.get(:primary_channel) }
+        return channel if channel
+        channel = @channels.first
+        @setting.set(:primary_channel, channel.name)
+        channel
+      end
     end
 
     def interesting_priority
@@ -36,19 +43,23 @@ module Zabbirc
     end
 
     def add_channel channel
-      @setting.fetch :primary_channel, channel.name
-      @channels << channel
+      synchronize do
+        @setting.fetch :primary_channel, channel.name
+        @channels << channel
+      end
     end
 
     def remove_channel channel
-      @channels.delete channel
+      synchronize do
+        @channels.delete channel
 
-      if channel == @setting.get(:primary_channel)
-        @setting.set :primary_channel, @channels.first.try(:name)
+        if channel == @setting.get(:primary_channel)
+          @setting.set :primary_channel, @channels.first.try(:name)
+        end
+
+        unset_irc_user if @channels.empty?
+        true
       end
-
-      unset_irc_user if @channels.empty?
-      true
     end
 
     def interested_in? event
