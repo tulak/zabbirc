@@ -1,17 +1,20 @@
 module Zabbirc
   module Irc
     module PluginMethods
+      extend ActiveSupport::Concern
+      include Help
+      extend Help::ClassMethods
 
       def zabbirc_status m
         ops_msg = ops.find_all{|o| o.nick.present? }.collect{|o| "#{o.nick} as #{o.login}"}
-        m.reply("#{m.user.nick}: Identified ops: #{ops_msg.join(", ")}")
-      end
-
-      def acknowledge_event_usage m
-        op = authenticate m
-        return unless op
-        usage = "Usage: !ack <event-id> <ack-message>"
-        m.reply("#{op.nick}: #{usage}")
+        msg = []
+        if Zabbix::Connection.test_connection
+          msg << "#{m.user.nick}: Zabbix API connection successfull"
+        else
+          msg << "#{m.user.nick}: Zabbix API connection FAILED !!!"
+        end
+        msg << "#{m.user.nick}: Identified ops: #{ops_msg.join(", ")}"
+        m.reply msg.join("\n")
       end
 
       def acknowledge_event m, eventid, message
@@ -77,13 +80,6 @@ module Zabbirc
         op = authenticate m
         return unless op
         m.reply "#{op.nick}: #{op.setting}"
-      end
-
-      def set_setting_help m
-        op = authenticate m
-        return unless op
-        usage = "Usage: !setting set <setting-name> <setting-value>"
-        m.reply("#{op.nick}: #{usage}")
       end
 
       def set_setting m, key, value
