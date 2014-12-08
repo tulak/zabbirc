@@ -3,7 +3,7 @@ module Zabbirc
     DEFAULTS = ActiveSupport::HashWithIndifferentAccess.new({
         notify: true,
         primary_channel: nil,
-        events_priority: :high
+        events_priority: Zabbirc.config.default_events_priority
     })
 
     def initialize

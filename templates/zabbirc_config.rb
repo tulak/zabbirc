@@ -11,4 +11,5 @@ Zabbirc.configure do |config|
   ### Zabbirc configurations
   # config.events_check_interval = 10.seconds
   # config.notify_about_events_from_last = 5.minutes
+  # config.default_events_priority = :high
 end

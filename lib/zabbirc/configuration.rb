@@ -1,5 +1,7 @@
 require 'active_support/configurable'
 
+require 'zabbirc/priority'
+
 module Zabbirc
   def self.configure(&block)
     block.call(@config ||= Zabbirc::Configuration.new)
@@ -26,6 +28,18 @@ module Zabbirc
       config.param_name.respond_to?(:call) ? config.param_name.call : config.param_name
     end
 
+    def default_events_priority= value
+      allowed_priorities = Priority::PRIORITIES.values
+      unless allowed_priorities.include? value
+        raise ArgumentError, "Unexpected value in config file. default_events_priority can be one of `#{allowed_priorities.collect(&:inspect).join(", ")}` but `#{value.inspect}` was stated"
+      end
+      config.default_events_priority = value
+    end
+
+    def default_events_priority
+      config.default_events_priority
+    end
+
     # define param_name writer (copied from AS::Configurable)
     writer, line = 'def param_name=(value); config.param_name = value; end', __LINE__
     singleton_class.class_eval writer, __FILE__, line
@@ -36,6 +50,7 @@ module Zabbirc
   configure do |config|
     config.events_check_interval = 10.seconds
     config.notify_about_events_from_last = 5.minutes
+    config.default_events_priority = :high
 
     config.irc_server = "irc.freenode.org"
     config.irc_channels = ["#zabbirc-test", "#zabbirc-test-2"]
