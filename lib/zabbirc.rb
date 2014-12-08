@@ -19,6 +19,7 @@ module Zabbirc
   end
 end
 
+require 'zabbirc/configuration'
 require_dir "zabbirc/*.rb"
 require_dir "zabbirc/irc/*.rb"
 require 'zabbirc/zabbix/resource/base'
