@@ -127,7 +127,7 @@ module Zabbirc
           return
         end
         op.setting.set :events_priority, priority.code
-        m.reply "#{op.nick}: setting `events_priority` was set to `#{op.setting.get :events_priority}`"
+        m.reply "#{op.nick}: setting `events_priority` has been set to `#{op.setting.get :events_priority}`"
       end
 
       def set_primary_channel m, op, value
