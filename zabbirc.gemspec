@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'zabbirc'
   s.license     = 'MIT'
-  s.version     = '0.0.5'
+  s.version     = '0.0.6'
 
   s.authors     = ["Filip Zachar"]
   s.email       = 'tulak45@gmail.com'
