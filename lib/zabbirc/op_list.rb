@@ -32,9 +32,9 @@ module Zabbirc
     def remove op
       case op
       when String
-        @ops[op] = nil
+        @ops.delete(op)
       when Op
-        @ops[op.login] = nil
+        @ops.delete(op.login)
       else
         raise ArgumentError, "Stirng or Op expected"
       end
@@ -48,16 +48,22 @@ module Zabbirc
       self.class.new(find_all{ |op| op.interested_in? event })
     end
 
-    def notify event
+    def interested
+      self.class.new(find_all{ |op| op.setting.get :notify })
+    end
+
+    def notify object
+      message = case object
+                when String
+                  object
+                when Zabbix::Event
+                  object.label
+                end
       group_by(&:primary_channel).each do |channel, ops|
-        begin
-          next if channel.nil?
-          op_targets = ops.collect{|op| "#{op.nick}:" }.join(" ")
-          channel.send "#{op_targets} #{event.label}"
-          ops.each{ |op| op.event_notified event }
-        rescue =>e
-          binding.pry
-        end
+        next if channel.nil?
+        op_targets = ops.collect{|op| "#{op.nick}:" }.join(" ")
+        channel.send "#{op_targets} #{message}"
+        ops.each{ |op| op.event_notified object } if object.is_a? Zabbix::Event
       end
     end
 

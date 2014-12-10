@@ -3,6 +3,11 @@ module Zabbirc
     class Ops < Base
       def iterate
         sync_ops
+      rescue Zabbix::NotConnected => e
+        if Zabbix::Connection.up?
+          @service.ops.interested.notify e.to_s
+          Zabbix::Connection.down!
+        end
       end
 
       private

@@ -70,6 +70,7 @@ module Zabbirc
 
     def event_notified event
       @notified_events[event.id] = Time.now
+      clear_notified_events
     end
 
     private

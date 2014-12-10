@@ -154,7 +154,7 @@ describe Zabbirc::Irc::PluginMethods do
 
   describe "#set_setting" do
     shared_examples "set_setting" do |key, value, expected_setting_value|
-      let(:expected_msg) { "#{mock_nick}: setting `#{key}` was set to `#{expected_setting_value}`" }
+      let(:expected_msg) { "#{mock_nick}: setting `#{key}` has been set to `#{expected_setting_value}`" }
       let(:op) { bot.get_op mock_nick }
       it "should set #{key} setting to #{value}" do
         expect(mock_message).to receive(:reply).with(expected_msg)

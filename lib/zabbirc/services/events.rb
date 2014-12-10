@@ -10,6 +10,11 @@ module Zabbirc
             @service.ops.interested_in(event).notify event
           end
         end
+      rescue Zabbix::NotConnected => e
+        if Zabbix::Connection.up?
+          @service.ops.interested.notify e.to_s
+          Zabbix::Connection.down!
+        end
       end
 
       private
@@ -18,12 +23,6 @@ module Zabbirc
         triggers = events.group_by{|e| e.related_object.id }
         triggers.collect do |_id, events|
           events.sort_by{|e| e.created_at }.last
-        end
-      end
-
-      def send_notifications op, events
-        events.each do |event|
-          op.notify event
         end
       end
     end

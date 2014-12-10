@@ -13,10 +13,16 @@ end
 
 require 'zabbirc'
 require_relative '../config/config'
+Zabbirc.logger
+exit false unless Zabbirc::Zabbix::Connection.test_connection
 
 s = Zabbirc::Service.new
 
 trap "SIGINT" do
+  s.stop
+end
+
+trap "SIGTERM" do
   s.stop
 end
 

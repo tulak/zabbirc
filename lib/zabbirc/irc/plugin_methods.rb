@@ -15,6 +15,8 @@ module Zabbirc
         end
         msg << "#{m.user.nick}: Identified ops: #{ops_msg.join(", ")}"
         m.reply msg.join("\n")
+      rescue Zabbix::NotConnected => e
+        rescue_not_connected m, e
       end
 
       def acknowledge_event m, eventid, message
@@ -28,6 +30,8 @@ module Zabbirc
         else
           m.reply "#{op.nick}: Could not acknowledge event `#{event.label}`"
         end
+      rescue Zabbix::NotConnected => e
+        rescue_not_connected m, e
       end
 
       def host_status m, host
@@ -48,6 +52,8 @@ module Zabbirc
           end
         end
         m.reply msg.join("\n")
+      rescue Zabbix::NotConnected => e
+        rescue_not_connected m, e
       end
 
       def host_latest m, host, limit
@@ -68,6 +74,8 @@ module Zabbirc
           end
         end
         m.reply msg.join("\n")
+      rescue Zabbix::NotConnected => e
+        rescue_not_connected m, e
       end
 
       def sync_ops m, u=nil
@@ -111,7 +119,7 @@ module Zabbirc
           m.reply "#{op.nick}: uknown value `#{value}`. Allowed values: true, on, 1, false, off, 0"
           return
         end
-        m.reply "#{op.nick}: setting `notify` was set to `#{op.setting.get :notify}`"
+        m.reply "#{op.nick}: setting `notify` has been set to `#{op.setting.get :notify}`"
       end
 
       def set_events_priority m, op, value
@@ -143,7 +151,7 @@ module Zabbirc
           m.reply "#{op.nick}: uknown value `#{value}`. Allowed values: #{channel_names.join(", ")}"
           return
         end
-        m.reply "#{op.nick}: setting `primary_channel` was set to `#{op.setting.get :primary_channel}`"
+        m.reply "#{op.nick}: setting `primary_channel` has been set to `#{op.setting.get :primary_channel}`"
       end
 
       ### Events
@@ -159,6 +167,8 @@ module Zabbirc
                 "#{op.nick}: No last events"
               end
         m.reply msg
+      rescue Zabbix::NotConnected => e
+        rescue_not_connected m, e
       end
 
       def ops
@@ -216,6 +226,12 @@ module Zabbirc
           m.reply "#{op.nick} Could not find event: #{e}"
           false
         end
+      end
+
+      def rescue_not_connected m, e
+        op = get_op m
+        return unless op
+        m.reply "#{op.nick}: #{e.to_s}"
       end
     end
   end
