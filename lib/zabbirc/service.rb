@@ -86,7 +86,7 @@ module Zabbirc
     end
 
     def pre_start_script
-      @ops_service.iterate
+      @ops_service.sync_ops
       @ops.load_settings
     rescue => e
       Zabbirc.logger.error "Exception `#{e}` while running pre_start_script"

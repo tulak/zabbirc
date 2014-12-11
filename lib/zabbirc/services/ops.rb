@@ -3,6 +3,18 @@ module Zabbirc
     class Ops < Base
       def iterate
         sync_ops
+        synchronize do
+          @service.ops.dump_settings
+        end
+      end
+
+      def sync_ops
+        synchronize do
+          sync_zabbix
+          @cinch_bot.channels.each do |channel|
+            sync_irc channel
+          end
+        end
       rescue Zabbix::NotConnected => e
         if Zabbix::Connection.up?
           @service.ops.interested.notify e.to_s
@@ -18,15 +30,6 @@ module Zabbirc
 
       def channel_find_user channel, login
         channel.users.keys.find { |irc_user| irc_user.user.sub("~","") == login }
-      end
-
-      def sync_ops
-        synchronize do
-          sync_zabbix
-          @cinch_bot.channels.each do |channel|
-            sync_irc channel
-          end
-        end
       end
 
       def sync_irc channel
