@@ -21,8 +21,8 @@ module Zabbirc
       match /(settings set)\s*$/, method: :zabbirc_help_detail
 
       # Events
-      register_help "events", "Show events from last #{Zabbirc.config.notify_about_events_from_last.to_i / 60} minutes. Usage: !events"
-      match "events", method: :list_events
+      register_help "events", "Show events from last #{Zabbirc.config.notify_about_events_from_last.to_i / 60} minutes filtered by <priority> and <host>. Usage: !events [<priority [<host>]]"
+      match /events(?: ([a-zA-Z0-9\-]+)(?: ([a-zA-Z0-9\-]+))?)?\s*$/, method: :list_events
 
       # Host
       register_help "status", "Show status of host. Usage: !status <hostname>"

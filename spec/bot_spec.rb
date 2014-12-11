@@ -125,20 +125,44 @@ describe Zabbirc::Irc::PluginMethods do
       let(:recent_events) { [] }
 
       it "should report no last events" do
-        expect(mock_message).to receive(:reply).with("#{mock_nick}: No last events")
+        expect(mock_message).to receive(:reply).with("#{mock_nick}: No last events for priority `#{Zabbirc::Priority.new(0)}`")
         bot.list_events mock_message
       end
     end
 
-    context "no last events" do
-      let(:event1) { double "Event1", label: "Event 1 label" }
-      let(:event2) { double "Event2", label: "Event 2 label" }
-      let(:recent_events) { [event1, event2] }
+    context "some last events" do
+      let(:event1_information) { double "Event1", label: "Event 1 label", priority: Zabbirc::Priority.new(:information) }
+      let(:event2_information) { double "Event2", label: "Event 2 label", priority: Zabbirc::Priority.new(:information) }
+      let(:event3_high)        { double "Event3", label: "Event 3 label", priority: Zabbirc::Priority.new(:high) }
+      let(:recent_events) { [event1_information, event2_information, event3_high] }
       let(:expected_msg) { recent_events.collect{|e| "#{mock_nick}: #{e.label}"}.join("\n") }
 
-      it "should report no last events" do
+      before do
+        recent_events.each do |e|
+          allow(e).to receive(:any_host_matches?).and_return(false)
+        end
+      end
+
+      it "should report all last events" do
         expect(mock_message).to receive(:reply).with(expected_msg)
         bot.list_events mock_message
+      end
+
+      context "with high priority filtered" do
+        let(:expected_msg) { [event3_high].collect{|e| "#{mock_nick}: #{e.label}"}.join("\n") }
+        it "should report high priority last events" do
+          expect(mock_message).to receive(:reply).with(expected_msg)
+          bot.list_events mock_message, "high"
+        end
+      end
+
+      context "with host filtered" do
+        let(:expected_msg) { [event1_information].collect{|e| "#{mock_nick}: #{e.label}"}.join("\n") }
+        it "should report host matched last events" do
+          allow(event1_information).to receive(:any_host_matches?).and_return(true  )
+          expect(mock_message).to receive(:reply).with(expected_msg)
+          bot.list_events mock_message, "information", "host1"
+        end
       end
     end
   end

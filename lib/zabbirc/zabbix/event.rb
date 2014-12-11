@@ -79,6 +79,10 @@ module Zabbirc
             gsub("%state", "#{state}")
       end
 
+      def any_host_matches? regexp
+        hosts.any?{|h| h.name =~ regexp }
+      end
+
       private
 
       def determine_related_object

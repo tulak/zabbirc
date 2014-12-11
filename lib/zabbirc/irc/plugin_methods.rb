@@ -156,16 +156,22 @@ module Zabbirc
       end
 
       ### Events
-      def list_events m
+      def list_events m, priority=nil, host=nil
         op = authenticate m
         return unless op
+        priority = parse_priority(m, priority || 0)
+        return unless priority
+        
         events = Zabbix::Event.recent
+        events = events.select{|e| e.priority >= priority }
+        events = events.select{|e| e.any_host_matches? /#{host}/ } if host
         msg = if events.any?
                 events.collect do |e|
                   "#{op.nick}: #{e.label}"
                 end.join("\n")
               else
-                "#{op.nick}: No last events"
+                host_filter = host ? " and host `#{host}`" : ""
+                "#{op.nick}: No last events for priority `#{priority}`#{host_filter}"
               end
         m.reply msg
       rescue Zabbix::NotConnected => e
@@ -227,6 +233,14 @@ module Zabbirc
           m.reply "#{op.nick} Could not find event: #{e}"
           false
         end
+      end
+
+      def parse_priority m, priority
+        op = get_op m
+        Priority.new(priority)
+      rescue ArgumentError => e
+        m.reply("#{op.nick}: #{e}")
+        nil
       end
 
       def rescue_not_connected m, e
