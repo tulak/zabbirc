@@ -28,7 +28,7 @@ module Zabbirc
 
         def initialize attrs
           @attrs = ActiveSupport::HashWithIndifferentAccess.new attrs
-          raise ArgumentError, "attribute `#{self.class.model_name}id` not found, probably not an Event" unless @attrs.key? :"#{self.class.model_name}id"
+          raise ArgumentError, "attribute `#{self.class.model_name}id` not found, probably not a #{self.class.model_name}" unless @attrs.key? :"#{self.class.model_name}id"
         end
 
         def id

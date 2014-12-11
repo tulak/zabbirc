@@ -65,6 +65,7 @@ module Zabbirc
     def interested_in? event
       return false unless setting.get :notify
       return false if @notified_events.key? event.id
+      return false if event.value == :ok and not setting.get :notify_recoveries
       event.priority >= interesting_priority
     end
 

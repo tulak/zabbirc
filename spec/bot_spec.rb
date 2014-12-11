@@ -145,7 +145,7 @@ describe Zabbirc::Irc::PluginMethods do
 
   describe "#show_settings" do
     let(:mock_user_settings) { {primary_channel: "#channel-1", events_priority: "high", notify: false } }
-    let(:expected_msg) { "#{mock_nick}: notify: false, primary_channel: #channel-1, events_priority: high" }
+    let(:expected_msg) { "#{mock_nick}: notify: false, notify_recoveries: true, primary_channel: #channel-1, events_priority: high" }
     it "should show settings" do
       expect(mock_message).to receive(:reply).with(expected_msg)
       bot.show_settings mock_message

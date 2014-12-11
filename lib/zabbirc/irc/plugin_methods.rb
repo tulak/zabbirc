@@ -94,8 +94,8 @@ module Zabbirc
         op = authenticate m
         return unless op
         case key
-        when "notify"
-          set_notify m, op, value
+        when "notify", "notify_recoveries"
+          set_boolean m, op, key, value
         when "events_priority"
           set_events_priority m, op, value
         when "primary_channel"
@@ -105,21 +105,22 @@ module Zabbirc
         end
       end
 
-      def set_notify m, op, value
+      def set_boolean m, op, key, value
         if value.nil?
-          m.reply "#{op.nick}: notify allowed values: true, on, 1, false, off, 0"
+          m.reply "#{op.nick}: #{key} allowed values: true, on, 1, false, off, 0"
           return
         end
+
         case value
         when "true", "on", "1"
-          op.setting.set :notify, true
+          op.setting.set key, true
         when "false", "off", "0"
-          op.setting.set :notify, false
+          op.setting.set key, false
         else
           m.reply "#{op.nick}: uknown value `#{value}`. Allowed values: true, on, 1, false, off, 0"
           return
         end
-        m.reply "#{op.nick}: setting `notify` has been set to `#{op.setting.get :notify}`"
+        m.reply "#{op.nick}: setting `#{key}` has been set to `#{op.setting.get key}`"
       end
 
       def set_events_priority m, op, value
