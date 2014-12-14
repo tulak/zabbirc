@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    zabbirc (0.0.8)
+    zabbirc (0.0.9)
       activesupport (~> 4.1.6, >= 4.1.6)
       cinch (~> 2.1)
       dotenv (~> 1.0, >= 1.0.2)
