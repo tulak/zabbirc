@@ -15,7 +15,7 @@ module Zabbirc
                 else
                   self.new res.first
                 end
-        rescue Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, SocketError => e
+        rescue Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, SocketError, OpenSSL::SSL::SSLError => e
           Zabbirc.logger.error "Zabbix::Resource#find: #{e}"
           raise NotConnected, e
         else
@@ -29,7 +29,7 @@ module Zabbirc
           ret = res.collect do |obj|
             self.new obj
           end
-        rescue Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, SocketError => e
+        rescue Errno::ETIMEDOUT, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, SocketError, OpenSSL::SSL::SSLError => e
           Zabbirc.logger.error "Zabbix::Resource#get: #{e}"
           raise NotConnected, e
         else
