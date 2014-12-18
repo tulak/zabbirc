@@ -14,31 +14,31 @@ require 'zabbirc'
 require 'pry'
 
 def chown_directory dir
-  puts "Using sudo to chown runtime directory `#{dir}`"
+  puts "Using sudo to chown directory `#{dir}`"
   system "sudo chown #{Process.uid}:#{Process.gid} #{dir}"
 end
 
 begin
-  unless Dir.exists? Zabbirc::RUNTIME_DATA_DIR
-    puts "Using sudo to create runtime directory #{Zabbirc::RUNTIME_DATA_DIR}"
-    r = system "sudo mkdir #{Zabbirc::RUNTIME_DATA_DIR}"
+  unless Dir.exists? Zabbirc::LIB_DATA_DIR
+    puts "Using sudo to create lib directory #{Zabbirc::LIB_DATA_DIR}"
+    r = system "sudo mkdir #{Zabbirc::LIB_DATA_DIR}"
     if r
-      puts "Runtime directory #{Zabbirc::RUNTIME_DATA_DIR} created"
-      chown_directory Zabbirc::RUNTIME_DATA_DIR
+      puts "Runtime directory #{Zabbirc::LIB_DATA_DIR} created"
+      chown_directory Zabbirc::LIB_DATA_DIR
     else
-      puts "Could not create runtime directory #{Zabbirc::RUNTIME_DATA_DIR}"
+      puts "Could not create runtime directory #{Zabbirc::LIB_DATA_DIR}"
       puts "Please create this directory and check if it's accesible by user, that will run zabbirc bot"
     end
   end
 
   # Test if runtime directory is accessible
-  f = File.open(Zabbirc::RUNTIME_DATA_DIR.join("test"), "w")
+  f = File.open(Zabbirc::LIB_DATA_DIR.join("test"), "w")
   f.puts "test"
   f.close
   FileUtils.rm f.path
 rescue Errno::EACCES
-  unless chown_directory Zabbirc::RUNTIME_DATA_DIR
-    puts "Could not make runtime directory `#{Zabbirc::RUNTIME_DATA_DIR}` accessible"
+  unless chown_directory Zabbirc::LIB_DATA_DIR
+    puts "Could not make runtime directory `#{Zabbirc::LIB_DATA_DIR}` accessible"
   end
 end
 

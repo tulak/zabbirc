@@ -12,7 +12,7 @@ def require_dir dir
 end
 
 module Zabbirc
-  RUNTIME_DATA_DIR = Pathname.new("/var/run/zabbirc") unless defined? RUNTIME_DATA_DIR
+  LIB_DATA_DIR = Pathname.new("/usr/local/zabbirc") unless defined? LIB_DATA_DIR
   def self.synchronize &block
     @mutex ||= Mutex.new
     @mutex.synchronize &block

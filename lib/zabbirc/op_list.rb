@@ -1,5 +1,5 @@
 module Zabbirc
-  STORED_SETTINGS_FILE = Zabbirc::RUNTIME_DATA_DIR.join("ops_settings.yaml")
+  STORED_SETTINGS_FILE = Zabbirc::LIB_DATA_DIR.join("ops_settings.yaml")
   class OpList
     include Enumerable
 
