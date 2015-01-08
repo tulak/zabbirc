@@ -55,6 +55,10 @@ module Zabbirc
         end
       end
 
+      def shorten_id
+        @shorten_id ||= Zabbirc.events_id_shortener.get_shorten_id id
+      end
+
       alias_method :state, :value
 
       def message
@@ -67,7 +71,7 @@ module Zabbirc
       end
 
       def label
-        format_label "|%id| %time [%priority-code] %msg - %state"
+        format_label "|%sid| %time [%priority-code] %msg - %state"
       end
 
       def format_label fmt
@@ -76,6 +80,7 @@ module Zabbirc
             gsub("%time", "#{created_at.to_formatted_s(:short)}").
             gsub("%msg", "#{message}").
             gsub("%id", "#{id}").
+            gsub("%sid", "#{shorten_id}").
             gsub("%state", "#{state}")
       end
 

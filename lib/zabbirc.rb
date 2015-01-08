@@ -17,6 +17,10 @@ module Zabbirc
     @mutex ||= Mutex.new
     @mutex.synchronize &block
   end
+
+  def self.events_id_shortener
+    @events_id_shortener ||= IdShortener.new
+  end
 end
 
 require 'zabbirc/configuration'

@@ -20,8 +20,9 @@ describe Zabbirc::Irc::PluginMethods do
     end
 
     it "should acknowledge event" do
+      shorten_id = Zabbirc.events_id_shortener.get_shorten_id event.id
       expect(mock_message).to receive(:reply).with("#{mock_nick}: Event `#{event.label}` acknowledged with message: #{message}")
-      bot.acknowledge_event mock_message, event.id, message
+      bot.acknowledge_event mock_message, shorten_id, message
     end
   end
 

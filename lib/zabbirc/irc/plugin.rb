@@ -33,7 +33,7 @@ module Zabbirc
 
       # ACK
       register_help "ack", "Acknowledges event with message. Usage: !ack <event-id> <ack-message>"
-      match /ack (\d+) (.*)/, method: :acknowledge_event
+      match /ack ([a-zA-Z0-9]+) (.*)/, method: :acknowledge_event
       match /(ack)\s*$/, method: :zabbirc_help_detail
       match /(ack) (?:[^ ]+)\s*$/, method: :zabbirc_help_detail
     end

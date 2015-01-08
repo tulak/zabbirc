@@ -220,12 +220,17 @@ module Zabbirc
         false
       end
 
-      def find_event m, eventid
+      def find_event m, short_eventid
         op = get_op m
         begin
+          eventid = Zabbirc.events_id_shortener.get_id short_eventid
+          unless eventid
+            m.reply "#{op.nick}: Bad event id `#{short_eventid}`"
+            return false
+          end
           event = Zabbix::Event.find(eventid, {selectHosts: :extend, selectRelatedObject: :extend})
           if event.nil?
-            m.reply "#{op.nick} Could not find event with id `#{eventid}`"
+            m.reply "#{op.nick} Could not find event with id `#{short_eventid}`"
             return false
           end
           event
