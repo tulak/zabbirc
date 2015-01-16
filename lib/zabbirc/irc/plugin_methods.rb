@@ -8,10 +8,11 @@ module Zabbirc
       def zabbirc_status m
         ops_msg = ops.find_all{|o| o.nick.present? }.collect{|o| "#{o.nick} as #{o.login}"}
         msg = []
+        version = "Zabbirc #{Zabbirc::VERSION}"
         if Zabbix::Connection.test_connection
-          msg << "#{m.user.nick}: Zabbix API connection successfull"
+          msg << "#{m.user.nick}: #{version} - Zabbix API connection successfull"
         else
-          msg << "#{m.user.nick}: Zabbix API connection FAILED !!!"
+          msg << "#{m.user.nick}: #{version} - Zabbix API connection FAILED !!!"
         end
         msg << "#{m.user.nick}: Identified ops: #{ops_msg.join(", ")}"
         m.reply msg.join("\n")

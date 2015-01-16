@@ -1,7 +1,10 @@
+lib = File.expand_path("../lib", __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'zabbirc/version'
 Gem::Specification.new do |s|
   s.name        = 'zabbirc'
   s.license     = 'MIT'
-  s.version     = '0.0.11'
+  s.version     = Zabbirc::VERSION
 
   s.authors     = ["Filip Zachar"]
   s.email       = 'tulak45@gmail.com'
