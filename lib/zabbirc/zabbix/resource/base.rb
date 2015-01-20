@@ -18,6 +18,14 @@ module Zabbirc
           @model_name ||= name.split(/::/).last.underscore
         end
 
+        def self.id_attr_name
+          @id_attr_name ||= "#{model_name}id"
+        end
+
+        def self.set_id_attr_name id_attr_name
+          @id_attr_name = id_attr_name
+        end
+
         def self.api
           Connection.get_connection.client
         end
@@ -28,11 +36,11 @@ module Zabbirc
 
         def initialize attrs
           @attrs = ActiveSupport::HashWithIndifferentAccess.new attrs
-          raise ArgumentError, "attribute `#{self.class.model_name}id` not found, probably not a #{self.class.model_name}" unless @attrs.key? :"#{self.class.model_name}id"
+          raise ArgumentError, "attribute `#{self.class.id_attr_name}` not found, probably not a #{self.class.model_name}" unless @attrs.key? :"#{self.class.id_attr_name}"
         end
 
         def id
-          @attrs["#{self.class.model_name}id"]
+          @attrs[self.class.id_attr_name]
         end
 
         def [] attr

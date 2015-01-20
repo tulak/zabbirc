@@ -12,8 +12,16 @@ module Zabbirc
             selectHosts: :extend
         }.merge(options)
 
+
+
         priority_from = Priority.new(params.delete(:priority_from))
         events = get params
+
+        host_ids = events.flat_map(&:hosts).collect(&:id).uniq
+        hosts = Host.get(hostids: host_ids, selectGroups: :extend)
+
+
+
         events = events.find_all{|e| e.priority >= priority_from }
         events.sort{|x,y| x.priority <=> y.priority }
       end
