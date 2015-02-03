@@ -17,16 +17,23 @@ module Zabbirc
         priority_from = Priority.new(params.delete(:priority_from))
         events = get params
 
-        host_ids = events.flat_map(&:hosts).collect(&:id).uniq
-        hosts = Host.get(hostids: host_ids, selectGroups: :extend)
-
-
+        preload_host_groups events
 
         events = events.find_all{|e| e.priority >= priority_from }
         events.sort{|x,y| x.priority <=> y.priority }
       end
 
+      def self.preload_host_groups events
+        host_ids = events.flat_map(&:hosts).collect(&:id).uniq
+        hosts = Host.get(hostids: host_ids, selectGroups: :extend)
+        events.each do |event|
+          event_host_ids = event.hosts.collect(&:id)
+          event.host_groups = hosts.select{|h| event_host_ids.include? h.id }.flat_map(&:groups)
+        end
+      end
+
       attr_reader :attrs
+      attr_writer :host_groups
 
       delegate :priority, :priority_code, to: :related_object
 
@@ -34,6 +41,14 @@ module Zabbirc
         raise AttributeError, "`source` attribute required" if @attrs[:source].blank?
         raise AttributeError, "`object` attribute required" if @attrs[:object].blank?
         @related_object ||= determine_related_object
+      end
+
+      def host_groups
+        @host_groups ||= begin
+          host_ids = hosts.collect(&:id).uniq
+          hosts = Host.get(hostids: host_ids, selectGroups: :extend)
+          hosts.flat_map(&:groups)
+        end
       end
 
       def acknowledge message
