@@ -39,48 +39,9 @@ module Zabbirc
         rescue_not_connected m, e
       end
 
-      def host_status m, host
-        op = authenticate m
-        return unless op
-        host = find_host m, host
-        return unless host
-
-        triggers = Zabbix::Trigger.get(hostids: host.id, filter: {value: 1}, selectHosts: :extend)
-        triggers = triggers.sort{|x,y| x.priority <=> y.priority }
-        msg = ["#{op.nick}: Host: #{host.name}"]
-        if triggers.empty?
-          msg[0] << " - status: OK"
-        else
-          msg[0] << " - status: #{triggers.size} problems"
-          triggers.each do |trigger|
-            msg << "#{op.nick}: status: #{trigger.label}"
-          end
-        end
-        m.reply msg.join("\n")
-      rescue Zabbix::NotConnected => e
-        rescue_not_connected m, e
-      end
-
-      def host_latest m, host, limit
-        limit ||= 8
-        op = authenticate m
-        return unless op
-        host = find_host m, host
-        return unless host
-
-        msg = ["#{op.nick}: Host: #{host.name}"]
-        events = Zabbix::Event.get(hostids: host.id, limit: limit, selectHosts: :extend, selectRelatedObject: :extend, sortfield: :clock, sortorder: "DESC")
-        if events.empty?
-          msg[0] << " - no events found"
-        else
-          msg[0] << " - showing last #{events.size} events"
-          events.each do |event|
-            msg << "#{op.nick}: !latest: #{event.label}"
-          end
-        end
-        m.reply msg.join("\n")
-      rescue Zabbix::NotConnected => e
-        rescue_not_connected m, e
+      def host_command m, cmd
+        cmd = HostCommand.new(ops, m, cmd)
+        cmd.run
       end
 
       def sync_ops m, u=nil

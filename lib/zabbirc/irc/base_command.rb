@@ -14,7 +14,7 @@ module Zabbirc
         @ops = ops
         @message = message
         @op = get_op @message
-        @cmd = cmd.strip.gsub(/\s{2,}/," ")
+        @cmd = cmd.to_s.strip.gsub(/\s{2,}/," ")
         @args = @cmd.split(/ /)
       end
 
@@ -55,14 +55,53 @@ module Zabbirc
 
       def reply msg, *options
         options = options.extract_options!.reverse_merge(prefix: "")
-        case msg
-        when String
-          @message.reply "#{@op.nick}: #{options[:prefix]}#{msg}"
-        when Array
-          msg.each do |m|
-            reply m, *options
-          end
+        msg = Array.wrap msg
+        msg = msg.collect do |m|
+          "#{@op.nick}: #{options[:prefix]}#{m}"
+        end.join("\n")
+
+        @message.reply msg
+      end
+
+      def find_host host
+        hosts = Zabbix::Host.get(search: {host: host})
+        case hosts.size
+        when 0
+          reply "Host not found `#{host}`"
+        when 1
+          return hosts.first
+        when 2..10
+          reply "Found #{hosts.size} hosts: #{hosts.collect(&:name).join(', ')}. Be more specific"
+        else
+          reply "Found #{hosts.size} Be more specific"
         end
+        false
+      end
+
+      def find_event short_eventid
+        begin
+          eventid = Zabbirc.events_id_shortener.get_id short_eventid
+          unless eventid
+            reply "Bad event id `#{short_eventid}`"
+            return false
+          end
+          event = Zabbix::Event.find(eventid, {selectHosts: :extend, selectRelatedObject: :extend})
+          if event.nil?
+            reply "Could not find event with id `#{short_eventid}`"
+            return false
+          end
+          event
+        rescue Zabbix::IDNotUniqueError => e
+          reply "Could not find event: #{e}"
+          false
+        end
+      end
+
+      def parse_priority priority
+        Priority.new(priority)
+      rescue ArgumentError => e
+        reply("#{e}")
+        nil
       end
     end
   end
