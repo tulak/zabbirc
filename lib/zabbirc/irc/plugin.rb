@@ -9,8 +9,7 @@ module Zabbirc
       listen_to :join, method: :sync_ops
       listen_to :leaving, method: :sync_ops
 
-      match /zabbirc help\s*$/, method: :zabbirc_help
-      match /zabbirc help (.+)\s*$/, method: :zabbirc_help_detail
+      match /zabbirc help(.*)/, method: :help_command
       match /zabbirc status\s*$/, method: :zabbirc_status
 
       # Settings

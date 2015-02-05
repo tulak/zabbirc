@@ -20,7 +20,11 @@ module Zabbirc
 
       def run
         return unless authenticated?
-        perform # perform method should be implemented in subclass
+        begin
+          perform # perform method should be implemented in subclass
+        rescue Zabbix::NotConnected => e
+          reply "#{e.to_s}"
+        end
       end
 
       private
@@ -49,16 +53,16 @@ module Zabbirc
         end
       end
 
-      def reply msg
+      def reply msg, *options
+        options = options.extract_options!.reverse_merge(prefix: "")
         case msg
         when String
-          @message.reply "#{@op.nick}: #{msg}"
+          @message.reply "#{@op.nick}: #{options[:prefix]}#{msg}"
         when Array
           msg.each do |m|
-            reply m
+            reply m, *options
           end
         end
-
       end
     end
   end

@@ -3,7 +3,11 @@ module Zabbirc
     module PluginMethods
       extend ActiveSupport::Concern
       include Help
-      extend Help::ClassMethods
+
+      def help_command m, cmd
+        cmd = HelpCommand.new(ops, m, cmd)
+        cmd.run
+      end
 
       def zabbirc_status m
         ops_msg = ops.find_all{|o| o.nick.present? }.collect{|o| "#{o.nick} as #{o.login}"}
