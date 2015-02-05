@@ -1,7 +1,7 @@
 module Zabbirc
   class Op
 
-    attr_reader :channels, :setting, :nick, :login
+    attr_reader :channels, :setting, :nick, :login, :irc_user
     def initialize zabbix_user
       raise ArgumentError, 'zabbix_user' if zabbix_user.nil?
       @login= zabbix_user.alias

@@ -14,11 +14,7 @@ module Zabbirc
       match /zabbirc status\s*$/, method: :zabbirc_status
 
       # Settings
-      register_help "settings", "Show your op specific settings. Usage: !settings"
-      match "settings", method: :show_settings
-      register_help "settings set", "Set your op specific settings. Usage: !setting set <setting-name> <setting-value>"
-      match /settings set ([#_a-zA-Z0-9]+)(?: ([#\-_a-zA-Z0-9]+))?/, method: :set_setting
-      match /(settings set)\s*$/, method: :zabbirc_help_detail
+      match /settings(.*)/, method: :settings_command
 
       # Events
       register_help "events", "Show events from last #{Zabbirc.config.notify_about_events_from_last.to_i / 60} minutes filtered by <priority> and <host>. Usage: !events [<priority [<host>]]"

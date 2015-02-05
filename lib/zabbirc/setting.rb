@@ -4,7 +4,8 @@ module Zabbirc
         notify: true,
         notify_recoveries: true,
         primary_channel: nil,
-        events_priority: Zabbirc.config.default_events_priority
+        events_priority: Zabbirc.config.default_events_priority,
+        host_groups: ActiveSupport::HashWithIndifferentAccess.new
     })
 
     def initialize
