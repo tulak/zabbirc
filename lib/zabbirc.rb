@@ -2,6 +2,7 @@ require 'active_support/all'
 require 'singleton'
 require 'dotenv'
 require 'yaml'
+require 'pathname'
 Dotenv.load
 
 def require_dir dir
