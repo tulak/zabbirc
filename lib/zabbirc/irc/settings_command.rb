@@ -17,7 +17,8 @@ module Zabbirc
         when "set"
           set
         else
-          reply "unknown command `#{sub_cmd}`"
+          reply "settings: unknown command `#{sub_cmd}`"
+          reply help_features["settings"], prefix: "HELP settings: "
         end
       end
 
