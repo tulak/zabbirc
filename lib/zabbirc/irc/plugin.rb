@@ -12,7 +12,7 @@ module Zabbirc
       match /zabbirc status\s*$/, method: :zabbirc_status
 
       # Help
-      match /zabbirc help(?: (.*))?\Z/, method: :help_command
+      match /(?:zabbirc help|help)(?: (.*))?\Z/, method: :help_command
 
       # Settings
       match /settings(?: (.*))?\Z/, method: :settings_command
