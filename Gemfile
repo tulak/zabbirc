@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'activesupport', '~> 4.1.6'
+gem 'activesupport', '~> 4.2.4'
 gem 'dotenv', '~> 1.0.2'
 
 # IRC
