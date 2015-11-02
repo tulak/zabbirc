@@ -3,6 +3,7 @@ module Zabbirc
     HELP_FEATURES = {}
     class BaseCommand
       def self.register_help command, description
+        raise ArgumentError, "command `#{command}` already registered" if HELP_FEATURES.key? command
         HELP_FEATURES[command] = description
       end
 
@@ -10,6 +11,7 @@ module Zabbirc
         HELP_FEATURES
       end
 
+      attr_reader :op
       def initialize ops, message, cmd
         @ops = ops
         @message = message

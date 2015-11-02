@@ -4,11 +4,6 @@ module Zabbirc
       extend ActiveSupport::Concern
       include Help
 
-      def help_command m, cmd
-        cmd = HelpCommand.new(ops, m, cmd)
-        cmd.run
-      end
-
       def zabbirc_status m
         ops_msg = ops.find_all{|o| o.nick.present? }.collect{|o| "#{o.nick} as #{o.login}"}
         msg = []
@@ -24,19 +19,9 @@ module Zabbirc
         rescue_not_connected m, e
       end
 
-      def acknowledge_event m, eventid, message
-        op = authenticate m
-        return unless op
-        event = find_event m, eventid
-        return unless event
-
-        if event.acknowledge "#{op.nick}: #{message}"
-          m.reply "#{op.nick}: Event `#{event.label}` acknowledged with message: #{message}"
-        else
-          m.reply "#{op.nick}: Could not acknowledge event `#{event.label}`"
-        end
-      rescue Zabbix::NotConnected => e
-        rescue_not_connected m, e
+      def help_command m, cmd
+        cmd = HelpCommand.new(ops, m, cmd)
+        cmd.run
       end
 
       def host_command m, cmd
@@ -44,38 +29,19 @@ module Zabbirc
         cmd.run
       end
 
-      def sync_ops m, u=nil
-        return if u and u.nick == bot.nick
-        bot.zabbirc_service.ops_service.iterate
-      end
-
-      ### Settings
       def settings_command m, cmd
         cmd = SettingsCommand.new(ops, m, cmd)
         cmd.run
       end
 
-      ### Events
-      def list_events m, priority=nil, host=nil
-        op = authenticate m
-        return unless op
-        priority = parse_priority(m, priority || 0)
-        return unless priority
-        
-        events = Zabbix::Event.recent
-        events = events.select{|e| e.priority >= priority }
-        events = events.select{|e| e.any_host_matches? /#{host}/ } if host
-        msg = if events.any?
-                events.collect do |e|
-                  "#{op.nick}: #{e.label}"
-                end.join("\n")
-              else
-                host_filter = host ? " and host `#{host}`" : ""
-                "#{op.nick}: No last events for priority `#{priority}`#{host_filter}"
-              end
-        m.reply msg
-      rescue Zabbix::NotConnected => e
-        rescue_not_connected m, e
+      def event_command m, cmd
+        cmd = EventCommand.new(ops, m, cmd)
+        cmd.run
+      end
+
+      def sync_ops m, u=nil
+        return if u and u.nick == bot.nick
+        bot.zabbirc_service.ops_service.iterate
       end
 
       def ops
@@ -103,50 +69,6 @@ module Zabbirc
       end
 
       private
-
-      def find_host m, host
-        op = get_op m
-        hosts = Zabbix::Host.get(search: {host: host})
-        case hosts.size
-        when 0
-          m.reply "#{op.nick}: Host not found `#{host}`"
-        when 1
-          return hosts.first
-        when 2..10
-          m.reply "#{op.nick}: Found #{hosts.size} hosts: #{hosts.collect(&:name).join(', ')}. Be more specific"
-        else
-          m.reply "#{op.nick}: Found #{hosts.size} Be more specific"
-        end
-        false
-      end
-
-      def find_event m, short_eventid
-        op = get_op m
-        begin
-          eventid = Zabbirc.events_id_shortener.get_id short_eventid
-          unless eventid
-            m.reply "#{op.nick}: Bad event id `#{short_eventid}`"
-            return false
-          end
-          event = Zabbix::Event.find(eventid, {selectHosts: :extend, selectRelatedObject: :extend})
-          if event.nil?
-            m.reply "#{op.nick} Could not find event with id `#{short_eventid}`"
-            return false
-          end
-          event
-        rescue Zabbix::IDNotUniqueError => e
-          m.reply "#{op.nick} Could not find event: #{e}"
-          false
-        end
-      end
-
-      def parse_priority m, priority
-        op = get_op m
-        Priority.new(priority)
-      rescue ArgumentError => e
-        m.reply("#{op.nick}: #{e}")
-        nil
-      end
 
       def rescue_not_connected m, e
         op = get_op m

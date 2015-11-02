@@ -5,8 +5,8 @@ module Zabbirc
       register_help "latest", "Show last <N> (default 8) events of host. Usage: !latest <hostname> [<N>]"
       private
       def perform
-        command = @args.shift
-        case command
+        @sub_command = @args.shift
+        case @sub_command
         when "status"
           perform_status
         when "latest"
@@ -18,7 +18,7 @@ module Zabbirc
         @host ||= begin
           hostname = @args.shift
           if hostname.blank?
-            reply help_features["status"]
+            reply help_features[@sub_command]
             return
           end
           find_host hostname

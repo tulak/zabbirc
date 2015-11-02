@@ -1,11 +1,14 @@
 #!/usr/bin/env ruby
 require 'pry'
+require 'dotenv'
+Dotenv.load
 
 $base_dir = Pathname.new(
     File.expand_path(
         Pathname.new(File.dirname(__FILE__)).join("..")
     )
 )
+$:.unshift($base_dir.join("lib").to_s)
 # Rewrites runtime directory in development mode
 module Zabbirc
   RUNTIME_DATA_DIR = $base_dir.join("tmp")
