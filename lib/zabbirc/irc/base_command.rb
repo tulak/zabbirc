@@ -26,6 +26,8 @@ module Zabbirc
           perform # perform method should be implemented in subclass
         rescue Zabbix::NotConnected => e
           reply "#{e.to_s}"
+        rescue UserInputError => e
+          reply e.reply_messages
         end
       end
 
@@ -104,6 +106,14 @@ module Zabbirc
       rescue ArgumentError => e
         reply("#{e}")
         nil
+      end
+    end
+
+    class UserInputError < StandardError
+
+      attr_reader :reply_messages
+      def initialize reply_messages
+        @reply_messages = reply_messages
       end
     end
   end
