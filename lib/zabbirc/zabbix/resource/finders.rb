@@ -5,7 +5,7 @@ module Zabbirc
         def find id, *options
           options = options.extract_options!
           options = options.reverse_merge({
-                                              :"#{model_name}ids" => id
+                                              :"#{id_attr_name}s" => id
                                           })
           res = api.send(model_name).get options
           ret = if res.size == 0
