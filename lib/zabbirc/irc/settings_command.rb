@@ -3,7 +3,7 @@ module Zabbirc
     class SettingsCommand < BaseCommand
       register_help "settings", "Manage your op specific settings. Usage: !settings [show | set]"
       register_help "settings set", [
-          "Set your op specific settings. Usage: !setting set <setting-name> <setting-value> [hostgroup <host-group-name> | hostgroup-all]",
+          "Set your op specific settings. Usage: !setting set <setting-name> <setting-value> [hostgroups <host-group-name>[,<host-group-name>] | hostgroups-all]",
           "Some settings can be set per hostgroup. Flag `hostgroup-all` means that it will rewrite setting for all hostgroups.",
           "When used without optional part(hostgroup), it will change default settings."
       ]
@@ -23,78 +23,137 @@ module Zabbirc
       end
 
       def show
-        reply "#{@op.setting}"
+        inline = @op.setting.collect do |key, value|
+          next if key == "host_groups"
+          "#{key}: #{value}"
+        end.compact.join(", ")
+
+        reply "Default settings: #{inline}"
+
+        host_group_options = []
+        @op.setting.get(:host_groups).each do |group_id, options|
+          if options.any?
+            group = Zabbix::HostGroup.find(group_id)
+            group_options = options.collect{|k,v| "#{k}: #{v}" }.sort.join(", ")
+            host_group_options << " - #{group.name}: #{group_options}"
+          end
+        end
+
+        if host_group_options.any?
+          reply "Host group settings:"
+          reply host_group_options
+        end
       end
 
       def set
-        key = @args.shift
+        key, value, host_groups_flag, host_groups  = parse_set_command
         case key
         when "notify", "notify_recoveries"
-          set_boolean key
+          value = validate_boolean key, value
         when "events_priority"
-          set_events_priority
+          value = validate_events_priority value
         when "primary_channel"
-          set_primary_channel
+          value = validate_primary_channel value
         when nil, ""
           reply help_features["settings set"]
         else
           reply "unknown setting `#{key}`"
         end
+
+        set_value key, value, host_groups_flag, host_groups
       end
 
-      def set_boolean key
-        value = @args.shift
-        if value.nil?
-          reply "#{key} allowed values: true, on, 1, false, off, 0"
-          return
-        end
+      def validate_boolean key, value
+        raise UserInputError, "#{key} allowed values: true, on, 1, false, off, 0" if value.blank?
 
         case value
-        when "true", "on", "1"
-          @op.setting.set key, true
-        when "false", "off", "0"
-          @op.setting.set key, false
+        when "true", "on", "1" then true
+        when "false", "off", "0" then false
         else
-          reply "uknown value `#{value}`. Allowed values: true, on, 1, false, off, 0"
-          return
+          raise UserInputError, "uknown value `#{value}`. Allowed values: true, on, 1, false, off, 0"
         end
-        reply "setting `#{key}` has been set to `#{@op.setting.get key}`"
       end
 
-      def set_events_priority
-        value = @args.shift
-        if value.nil?
-          reply "events_priority allowed values: #{Priority::PRIORITIES.values.collect{|v| "`#{v}`"}.join(', ')} or numeric #{Priority::PRIORITIES.keys.join(", ")} "
-          return
-        end
+      def validate_events_priority value
+        allowed_values = "#{Priority::PRIORITIES.values.collect{|v| "`#{v}`"}.join(', ')} or numeric #{Priority::PRIORITIES.keys.join(", ")} "
+        raise UserInputError, "events_priority allowed values: #{allowed_values}" if value.blank?
         begin
           value = value.to_i if value =~ /^\d+$/
           priority = Priority.new value
         rescue ArgumentError
-          reply "uknown value `#{value}`. Allowed values: #{Priority::PRIORITIES.values.collect{|v| "`#{v}`"}.join(', ')} or numeric #{Priority::PRIORITIES.keys.join(", ")} "
-          return
+          raise UserInputError, "uknown value `#{value}`. Allowed values: #{allowed_values}"
         end
-        @op.setting.set :events_priority, priority.code
-        reply "setting `events_priority` has been set to `#{@op.setting.get :events_priority}`"
+        priority.code
       end
 
-      def set_primary_channel
+      def validate_primary_channel value
         channel_names = @op.channels.collect(&:name)
+        raise UserInputError, "primary_channel allowed values: #{channel_names.join(", ")}" if value.blank?
+        raise UserInputError, "uknown value `#{value}`. Allowed values: #{channel_names.join(", ")}" unless channel_names.include? value
+        value
+      end
+
+      def set_value key, value, host_groups_flag, host_groups
+        case host_groups_flag
+        when :none
+          @op.setting.set key, value
+          reply "setting `#{key}` has been set to `#{@op.setting.get key}`"
+        when :all
+          @op.setting.set key, value
+          host_groups.each do |host_group|
+            @op.setting.set key, value, host_group_id: host_group.id
+          end
+          reply "setting `#{key}` has been set to `#{@op.setting.get key}` for all host groups"
+        when :some
+          host_groups.each do |host_group|
+            @op.setting.set key, value, host_group_id: host_group.id
+          end
+          reply "setting `#{key}` has been set to `#{value}` for host groups: #{host_groups.collect(&:name).join(", ")}"
+        end
+      end
+
+      private
+      def parse_set_command
+        key = @args.shift
         value = @args.shift
-        if value.nil?
-          reply "notify allowed values: #{channel_names.join(", ")}"
-          return
-        end
-        case value
-        when *channel_names
-          @op.setting.set :primary_channel, value
+        host_groups_arg = @args.shift
+
+        case host_groups_arg
+        when 'hostgroups-all'
+          host_groups = Zabbix::HostGroup.get
+          host_groups_flag = :all
+        when 'hostgroups'
+          names = @args.join(" ").split(",").collect(&:strip)
+          raise UserInputError, ['no hostgroups specified'] + Array.wrap(help_features["settings set"]) if names.empty?
+          host_groups = find_host_groups names
+          host_groups_flag = :some
+        when nil, ""
+          host_groups = []
+          host_groups_flag = :none
         else
-          reply "uknown value `#{value}`. Allowed values: #{channel_names.join(", ")}"
-          return
+          raise UserInputError, help_features["settings set"]
         end
-        reply "setting `primary_channel` has been set to `#{@op.setting.get :primary_channel}`"
+        [key, value, host_groups_flag, host_groups]
+      end
+
+      def find_host_groups names
+        names.collect do |name|
+          host_group = Zabbix::HostGroup.get(search: { name: name })
+          case host_group.size
+          when 0
+            raise UserInputError, "Cannot find hostgroup with name: `#{name}`"
+          when 1
+            host_group.first
+          when 2..10
+            raise UserInputError, "Found #{host_group.size} host groups using name: `#{name}` be more specific. Host groups: #{host_group.collect(&:name).join(", ")}"
+          else
+            raise UserInputError, "Found #{host_group.size} host groups using name: `#{name}` be more specific"
+          end
+        end
       end
 
     end
   end
 end
+
+# TODO filtrovanie eventov podla hostgroup

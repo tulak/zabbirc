@@ -8,6 +8,7 @@ module Zabbirc
         host_groups: ActiveSupport::HashWithIndifferentAccess.new
     })
 
+    delegate :collect, to: :@options
     def initialize
       @options = ActiveSupport::HashWithIndifferentAccess.new DEFAULTS.deep_dup
     end
@@ -19,26 +20,61 @@ module Zabbirc
       @options = DEFAULTS.deep_dup.merge(stored_options)
     end
 
-    def set name, value
-      @options[name] = value
+    def set name, value, *options
+      host_group_id = parse_host_group_id(options)
+      if host_group_id
+        set_with_host_group name, value, host_group_id
+      else
+        @options[name] = value
+      end
     end
 
-    def get name
-      @options[name]
+    def get name, *options
+      host_group_id = parse_host_group_id(options)
+      if host_group_id
+        first_not_nil(host_group_options(host_group_id)[name], @options[name])
+      else
+        @options[name]
+      end
     end
 
-    def fetch name, value
-      @options[name] ||= value
-    end
+    def fetch name, value, *options
+      host_group_id = parse_host_group_id(options)
 
-    def to_s
-      @options.collect do |k, v|
-        "#{k}: #{v}"
-      end.join(", ")
+      if host_group_id
+        if host_group_options(host_group_id)[name].nil?
+          set_with_host_group name, value, host_group_id
+        else
+          get name, host_group_id: host_group_id
+        end
+      else
+        @options[name] ||= value
+      end
     end
 
     def to_hash
       @options.to_hash.deep_dup
+    end
+
+    private
+    def parse_host_group_id args
+      args.extract_options![:host_group_id]
+    end
+
+    def set_with_host_group name, value, host_group_id
+      if get(name) == value
+        host_group_options(host_group_id).delete(name)
+      else
+        host_group_options(host_group_id)[name] = value
+      end
+    end
+
+    def host_group_options host_group_id
+      @options[:host_groups][host_group_id] ||= ActiveSupport::HashWithIndifferentAccess.new
+    end
+
+    def first_not_nil *args
+      args.find{|x| not x.nil? }
     end
   end
 end
