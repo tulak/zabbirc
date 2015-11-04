@@ -38,8 +38,10 @@ module Zabbirc
       end
     end
 
-    def interesting_priority
-      Priority.new @setting.get(:events_priority)
+    def interesting_priorities host_groups
+      host_settings(:events_priority, host_groups).collect do |setting|
+        Priority.new setting
+      end
     end
 
     def add_channel channel
@@ -63,10 +65,18 @@ module Zabbirc
     end
 
     def interested_in? event
-      return false unless setting.get :notify
+      host_groups = event.host_groups
+      return false if host_settings(:notify, host_groups).all?{|x| x == false }
       return false if @notified_events.key? event.id
-      return false if event.value == :ok and not setting.get :notify_recoveries
-      event.priority >= interesting_priority
+      return false if event.value == :ok and host_settings(:notify_recoveries, host_groups).all?{|x| x == false }
+      interesting_priorities(host_groups).any? do |interesting_priority|
+        event.priority >= interesting_priority
+      end
+    end
+
+    def host_settings name, host_groups
+      settings = host_groups.collect{|hg| setting.get name, host_group_id: hg.id }
+      settings.uniq
     end
 
     def event_notified event
