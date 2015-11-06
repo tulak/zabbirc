@@ -26,6 +26,7 @@ end
 
 require 'zabbirc/configuration'
 require_dir "zabbirc/*.rb"
+require 'zabbirc/irc/base_command'
 require_dir "zabbirc/irc/*.rb"
 require 'zabbirc/zabbix/resource/base'
 require_dir "zabbirc/zabbix/*.rb"
