@@ -51,7 +51,8 @@ describe Zabbirc::Irc::SettingsCommand do
     context "group specific" do
       let(:group1) { double "HostGroup", id: 1, name: "Group1" }
       let(:group2) { double "HostGroup", id: 2, name: "Group2" }
-      let(:groups) { [group1, group2] }
+      let(:group3) { double "HostGroup", id: 3, name: "Group3" }
+      let(:groups) { [group1, group2, group3] }
       before do
         allow(Zabbirc::Zabbix::HostGroup).to receive(:get) { groups }
         allow(Zabbirc::Zabbix::HostGroup).to receive(:get).with(hash_including(search: { name: anything })) do |params|
@@ -60,64 +61,72 @@ describe Zabbirc::Irc::SettingsCommand do
       end
 
       shared_examples "set_group_setting" do |key, value, expected_setting_value|
-        let(:expected_msg) { "#{mock_nick}: setting `#{key}` has been set to `#{expected_setting_value}` for host groups: #{affected_host_group.name}" }
-        let(:cmd) { "set #{key} #{value} hostgroups #{affected_host_group.name}"}
+        let(:affected_host_groups_names) { affected_host_groups.collect(&:name).join(", ") }
+        let(:expected_msg) { "#{mock_nick}: setting `#{key}` has been set to `#{expected_setting_value}` for host groups: #{affected_host_groups_names}" }
+        let(:cmd) { "set #{key} #{value} hostgroups '#{affected_host_groups_names}'"}
         it "should set #{key} setting to #{value} for host group" do
           old_global_value = mock_op.setting.get(key)
 
           expect(mock_message).to receive(:reply).with(expected_msg)
           settings_command.run
-          expect(mock_op.setting.get(key, host_group_id: affected_host_group.id)).to eq expected_setting_value
+          affected_host_groups.each do |group|
+            expect(mock_op.setting.get(key, host_group_id: group.id)).to eq expected_setting_value
+          end
 
           expect(mock_op.setting.get(key)).to eq old_global_value
         end
       end
 
       shared_examples "set_all_groups_setting" do |key, value, expected_setting_value|
+        let(:affected_host_groups_names) { affected_host_groups.collect(&:name).join(", ") }
         let(:settings_command1) { Zabbirc::Irc::SettingsCommand.new ops_builder.ops, mock_message, cmd1 }
         let(:settings_command2) { Zabbirc::Irc::SettingsCommand.new ops_builder.ops, mock_message, cmd2 }
 
-        let!(:old_global_value) { mock_op.setting.get(key, host_group_id: affected_host_group.id) }
-        let(:expected_msg1) { "#{mock_nick}: setting `#{key}` has been set to `#{expected_setting_value}` for host groups: #{affected_host_group.name}" }
+        let!(:old_global_value) { mock_op.setting.get(key) }
+        let(:expected_msg1) { "#{mock_nick}: setting `#{key}` has been set to `#{expected_setting_value}` for host groups: #{affected_host_groups_names}" }
         let(:expected_msg2) { "#{mock_nick}: setting `#{key}` has been set to `#{old_global_value}` for all host groups" }
-        let(:cmd1) { "set #{key} #{value} hostgroups #{affected_host_group.name}"}
+        let(:cmd1) { "set #{key} #{value} hostgroups #{affected_host_groups_names}"}
         let(:cmd2) { "set #{key} #{old_global_value} hostgroups-all"}
         it "should set #{key} setting to #{value} for all host groups" do
           # sets host group specific setting
           expect(mock_message).to receive(:reply).with(expected_msg1)
           settings_command1.run
-          expect(mock_op.setting.get(key, host_group_id: affected_host_group.id)).to eq expected_setting_value
+          affected_host_groups.each do |group|
+            expect(mock_op.setting.get(key, host_group_id: group.id)).to eq expected_setting_value
+          end
           expect(mock_op.setting.get(key)).to eq old_global_value
 
           expect(mock_message).to receive(:reply).with(expected_msg2)
           settings_command2.run
-          expect(mock_op.setting.get(key, host_group_id: affected_host_group.id)).to eq old_global_value
+          affected_host_groups.each do |group|
+            expect(mock_op.setting.get(key, host_group_id: group.id)).to eq old_global_value
+          end
           expect(mock_op.setting.get(key)).to eq old_global_value
         end
       end
 
       it_should_behave_like "set_group_setting", "notify", "false", false do
-        let(:affected_host_group) { group1 }
+        let(:affected_host_groups) { [group1, group2] }
       end
 
       it_should_behave_like "set_group_setting", "events_priority", "high", :high do
-        let(:affected_host_group) { group1 }
+        let(:affected_host_groups) { [group1, group2] }
       end
 
       it_should_behave_like "set_group_setting", "events_priority", "5", :disaster do
-        let(:affected_host_group) { group1 }
+        let(:affected_host_groups) { [group1, group2] }
       end
 
       it_should_behave_like "set_all_groups_setting", "notify", "false", false do
-        let(:affected_host_group) { group1 }
+        let(:affected_host_groups) { [group1, group2] }
       end
 
       it_should_behave_like "set_all_groups_setting", "events_priority", "high", :high do
-        let(:affected_host_group) { group1 }
+        let(:affected_host_groups) { [group1, group2] }
       end
 
       it_should_behave_like "set_all_groups_setting", "events_priority", "5", :disaster do
-        let(:affected_host_group) { group1 }
+        let(:affected_host_groups) { [group1, group2] }
       end
 
     end
