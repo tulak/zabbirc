@@ -16,8 +16,14 @@ module Zabbirc
         @ops = ops
         @message = message
         @op = get_op @message
-        @cmd = cmd.to_s.strip.gsub(/\s{2,}/," ")
-        @args = @cmd.split(/ /)
+        @cmd = cmd.to_s.strip.gsub(/\s{2,}/," ").freeze
+        @args = parse_arguments @cmd
+      end
+
+      def parse_arguments cmd
+        cmd.scan(/'[a-zA-Z0-9_\-,# ]+'|[a-zA-Z0-9_\-,#]+/).collect do |x|
+          x.match(/[a-zA-Z0-9_\-,# ]+/)[0]
+        end
       end
 
       def run
