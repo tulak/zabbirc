@@ -16,7 +16,7 @@ module Zabbirc
               hash_data = @attrs[options[:zabbix_attribute]]
               if hash_data.blank?
                 this = self.class.find id, extend_key => :extend
-                raise StandardError, "zabbix response does not contain #{options[:zabbix_attribute]}" if this[options[:zabbix_attribute]].blank?
+                raise StandardError, "zabbix response does not contain #{options[:zabbix_attribute]}" if this[options[:zabbix_attribute]].nil?
                 hash_data = this[options[:zabbix_attribute]]
               end
 
