@@ -39,6 +39,11 @@ module Zabbirc
         cmd.run
       end
 
+      def maintenance_command m, cmd
+        cmd = MaintenanceCommand.new(ops, m, cmd)
+        cmd.run
+      end
+
       def sync_ops m, u=nil
         return if u and u.nick == bot.nick
         bot.zabbirc_service.ops_service.iterate

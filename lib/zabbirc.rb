@@ -22,6 +22,10 @@ module Zabbirc
   def self.events_id_shortener
     @events_id_shortener ||= IdShortener.new
   end
+
+  def self.maintenances_id_shortener
+    @maintenances_id_shortener ||= IdShortener.new
+  end
 end
 
 require 'zabbirc/configuration'

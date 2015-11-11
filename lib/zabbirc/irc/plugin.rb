@@ -22,6 +22,10 @@ module Zabbirc
 
       # Host
       match /((?:status|latest)(?: .*)?)/, method: :host_command
+
+      # Maintenance
+      match /maint(?: (.*))?\Z/, method: :maintenance_command
+
     end
   end
 end
