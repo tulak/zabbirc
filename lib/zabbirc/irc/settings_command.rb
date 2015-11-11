@@ -135,25 +135,6 @@ module Zabbirc
         end
         [key, value, host_groups_flag, host_groups]
       end
-
-      def find_host_groups names
-        names.collect do |name|
-          host_group = Zabbix::HostGroup.get(search: { name: name })
-          case host_group.size
-          when 0
-            raise UserInputError, "Cannot find hostgroup with name: `#{name}`"
-          when 1
-            host_group.first
-          when 2..10
-            raise UserInputError, "Found #{host_group.size} host groups using name: `#{name}` be more specific. Host groups: #{host_group.collect(&:name).join(", ")}"
-          else
-            raise UserInputError, "Found #{host_group.size} host groups using name: `#{name}` be more specific"
-          end
-        end
-      end
-
     end
   end
 end
-
-# TODO filtrovanie eventov podla hostgroup

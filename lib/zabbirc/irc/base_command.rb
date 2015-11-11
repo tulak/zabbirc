@@ -77,15 +77,36 @@ module Zabbirc
         hosts = Zabbix::Host.get(search: {host: host})
         case hosts.size
         when 0
-          reply "Host not found `#{host}`"
+          raise UserInputError, "Host not found `#{host}`"
         when 1
           return hosts.first
         when 2..10
-          reply "Found #{hosts.size} hosts: #{hosts.collect(&:name).join(', ')}. Be more specific"
+          raise UserInputError, "Found #{hosts.size} hosts: #{hosts.collect(&:name).join(', ')}. Be more specific"
         else
-          reply "Found #{hosts.size} Be more specific"
+          raise UserInputError, "Found #{hosts.size} Be more specific"
         end
-        false
+      end
+
+      def find_hosts names
+        names.collect{|name| find_host name }
+      end
+
+      def find_host_group name
+        host_group = Zabbix::HostGroup.get(search: { name: name })
+        case host_group.size
+          when 0
+            raise UserInputError, "Cannot find hostgroup with name: `#{name}`"
+          when 1
+            host_group.first
+          when 2..10
+            raise UserInputError, "Found #{host_group.size} host groups using name: `#{name}` be more specific. Host groups: #{host_group.collect(&:name).join(", ")}"
+          else
+            raise UserInputError, "Found #{host_group.size} host groups using name: `#{name}` be more specific"
+        end
+      end
+
+      def find_host_groups names
+        names.collect{ |name| find_host_group(name) }
       end
 
       def find_event short_eventid
