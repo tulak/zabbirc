@@ -59,6 +59,10 @@ Every host can be in more host groups. When a bot is deciding whether to notify 
 * `!latest host <number-of-events>` - prints last `number-of-events` (default 8) events of specific
 * `!status host` - prints status of the host. OK or prints triggers with problem
 * `!ack <event-id> <ack-message>` - acknowledges specified event with message
+* `!maint` - show active maintenances
+* `!maint [hostgroups] '<host_name>|<hostgroup_name>[, <host_name>|<hostgroup_name>]' <duration> <reason>` - schedules maintenance on specific hosts / hostgroups
+  * note that when host names contains spaces, you nee to wrap it to apostrofs:
+  * `!maint 'host 1, host 2' 1h some reason`
 
 
 Help
