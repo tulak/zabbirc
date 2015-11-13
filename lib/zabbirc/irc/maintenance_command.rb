@@ -47,7 +47,7 @@ module Zabbirc
 
         params[:duration] = parse_duration @args.shift
         params[:name] = @args.join(" ")
-        raise raise UserInputError, "no reason specified" unless params[:name]
+        raise raise UserInputError, "no reason specified" if params[:name].blank?
 
         id = Zabbix::Maintenance.create params
         maintenance = Zabbix::Maintenance.find(id)
