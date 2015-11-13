@@ -74,7 +74,7 @@ module Zabbirc
       end
 
       def find_host host
-        hosts = Zabbix::Host.get(search: {host: host})
+        hosts = Zabbix::Host.get(search: {name: host})
         case hosts.size
         when 0
           raise UserInputError, "Host not found `#{host}`"

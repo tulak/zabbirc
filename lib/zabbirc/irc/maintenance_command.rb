@@ -3,7 +3,9 @@ module Zabbirc
     class MaintenanceCommand < BaseCommand
       register_help "maint", [
           "Show active maintenances: !maint",
-          "Schedule a maintenance: !maint [hostgroups] 'host_name|hostgroup_name[, host_name|hostgroup_name]' duration reason"
+          "Schedule a maintenance: !maint [hostgroups] '<host_name>|<hostgroup_name>[, <host_name>|<hostgroup_name>]' <duration> <reason>",
+          " - duration format: 1h, 30m, 1h30m. h - hour, m - minute.",
+          "Delete a maintenance: !maint delete <maintenance-id>"
       ]
       private
       def perform
@@ -20,7 +22,7 @@ module Zabbirc
       end
 
       def perform_list
-        maintenances = Maintenance.get(selectHosts: :extend, selectGroups: :extend, selectTimePeriods: :extend)
+        maintenances = Zabbix::Maintenance.get(selectHosts: :extend, selectGroups: :extend, selectTimePeriods: :extend)
         active_maintenances = maintenances.select(&:active?)
         if active_maintenances.empty?
           reply "No active maintenances at this moment."
@@ -34,7 +36,9 @@ module Zabbirc
         params = {}
         hostgroups_flag = @args.shift
         if hostgroups_flag == "hostgroups"
-          target_names = @args.shift.split(/,/).collect(&:strip)
+          target_names = @args.shift
+          raise UserInputError, help_features["maint"] unless target_names
+          target_names = target_names.split(/,/).collect(&:strip)
           params[:host_group_ids] = find_host_groups(target_names).collect(&:id)
         else
           target_names = hostgroups_flag.split(/,/).collect(&:strip)
@@ -43,9 +47,10 @@ module Zabbirc
 
         params[:duration] = parse_duration @args.shift
         params[:name] = @args.join(" ")
+        raise raise UserInputError, "no reason specified" unless params[:name]
 
-        id = Maintenance.create params
-        maintenance = Maintenance.find(id)
+        id = Zabbix::Maintenance.create params
+        maintenance = Zabbix::Maintenance.find(id)
         reply [
                 "maintenance scheduled since #{maintenance.active_since.to_formatted_s(:short)} till #{maintenance.active_till.to_formatted_s(:short)}",
                 maintenance.label
@@ -85,6 +90,7 @@ module Zabbirc
       end
 
       def parse_duration duration_str
+        raise UserInputError, help_features["maint"] unless duration_str
         match_data = duration_str.match(/(?:(?<minutes>[0-9]+[mM])|(?:(?<hours>[0-9]+)[hH](?<minutes>[0-9]+[mM])?))/)
         raise UserInputError, ["cannot parse duration `#{duration_str}`", help_features["maint"]].flatten unless match_data
         duration = 0
