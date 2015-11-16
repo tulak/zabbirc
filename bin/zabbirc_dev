@@ -14,8 +14,9 @@ module Zabbirc
   RUNTIME_DATA_DIR = $base_dir.join("tmp")
 end
 
-require 'zabbirc'
+require 'zabbirc/configuration'
 require_relative '../config/config'
+require 'zabbirc'
 Zabbirc.logger
 exit false unless Zabbirc::Zabbix::Connection.test_connection
 

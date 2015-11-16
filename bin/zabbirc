@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
-require 'zabbirc'
+require 'zabbirc/configuration'
 config_path = File.expand_path(ARGV[0])
-
 unless config_path
   $stderr.puts "No config path specified"
   exit false
@@ -12,6 +11,8 @@ unless File.exists?(config_path)
 end
 
 require_relative config_path
+
+require 'zabbirc'
 
 Zabbirc.logger # initializes logger
 exit false unless Zabbirc::Zabbix::Connection.test_connection

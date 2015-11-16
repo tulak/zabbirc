@@ -1,4 +1,5 @@
 require 'active_support/configurable'
+require 'active_support/all'
 
 require 'zabbirc/priority'
 
