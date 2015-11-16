@@ -70,8 +70,8 @@ describe Zabbirc::Irc::HostCommand do
       end
       before do
         allow(Zabbirc::Zabbix::Event).to receive(:recent).and_return(events)
-        allow(event_high_good_host).to receive(:any_host_matches?).with(/#{host}/).and_return(true)
-        allow(event_high_bad_host).to receive(:any_host_matches?).with(/#{host}/).and_return(false)
+        allow(event_high_good_host).to receive(:any_host_matches?).with(/#{host}/i).and_return(true)
+        allow(event_high_bad_host).to receive(:any_host_matches?).with(/#{host}/i).and_return(false)
       end
 
       it "should report latest events" do

@@ -21,7 +21,7 @@ module Zabbirc
 
         events = Zabbix::Event.recent
         events = events.select{|e| e.priority >= priority }
-        events = events.select{|e| e.any_host_matches? /#{host}/ } if host.present?
+        events = events.select{|e| e.any_host_matches? /#{host}/i } if host.present?
         msg = if events.any?
                 events.collect do |e|
                   "#{e.label}"
