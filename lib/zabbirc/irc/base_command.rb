@@ -129,6 +129,7 @@ module Zabbirc
       end
 
       def parse_priority priority
+        priority = priority.to_i if priority =~ /^\d+$/
         Priority.new(priority)
       rescue ArgumentError => e
         reply("#{e}")
