@@ -3,7 +3,7 @@ module Zabbirc
     class MaintenanceCommand < BaseCommand
       register_help "maint", [
           "Show active maintenances: !maint",
-          "Schedule a maintenance: !maint [hostgroups] '<host_name>|<hostgroup_name>[, <host_name>|<hostgroup_name>]' <duration> <reason>",
+          "Schedule a maintenance: !maint [no-data] [hostgroups] '<host_name>|<hostgroup_name>[, <host_name>|<hostgroup_name>]' <duration> <reason>",
           " - duration format: 1h, 30m, 1h30m. h - hour, m - minute.",
           "Delete a maintenance: !maint delete <maintenance-id>"
       ]
@@ -34,7 +34,14 @@ module Zabbirc
 
       def perform_create
         params = {}
-        hostgroups_flag = @args.shift
+        without_data_collection_flag = @args.shift
+        if without_data_collection_flag == "no-data"
+          params[:without_data_collection] = true
+          hostgroups_flag = @args.shift
+        else
+          hostgroups_flag = without_data_collection_flag
+        end
+
         if hostgroups_flag == "hostgroups"
           target_names = @args.shift
           raise UserInputError, help_features["maint"] unless target_names

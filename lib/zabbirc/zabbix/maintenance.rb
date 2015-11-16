@@ -16,7 +16,8 @@ module Zabbirc
       def self.create *options
         default_options = {
             host_ids: [],
-            host_group_ids: []
+            host_group_ids: [],
+            without_data_collection: false
         }
 
         options = options.extract_options!
@@ -35,6 +36,7 @@ module Zabbirc
             active_till: maint_end.to_i,
             hostids: host_ids,
             groupids: host_group_ids,
+            maintenance_type: (options[:without_data_collection] ? 1 : 0),
             timeperiods: [
                 {
                     timeperiod_type: 0,
@@ -81,8 +83,12 @@ module Zabbirc
         (active_since..active_till).cover? Time.current
       end
 
+      def data_collection_label
+        " [NO-DATA-COL]" if maintenance_type.to_i == 1
+      end
+
       def label
-        format_label "|%sid| %start -> %end >> %name %targets"
+        format_label "|%sid|%data-collection-label %start -> %end >> %name %targets"
       end
 
       def format_label fmt
@@ -91,7 +97,8 @@ module Zabbirc
             gsub("%name", "#{name}").
             gsub("%id", "#{id}").
             gsub("%sid", "#{shorten_id}").
-            gsub("%targets", "#{target_labels}")
+            gsub("%targets", "#{target_labels}").
+            gsub("%data-collection-label", "#{data_collection_label}")
       end
 
       def target_labels

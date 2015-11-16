@@ -76,6 +76,15 @@ describe Zabbirc::Irc::MaintenanceCommand do
         expect(mock_message).to receive(:reply)
         maintenance_command.run
       end
+
+      context "without data collection" do
+        let(:cmd) { "no-data '#{host1.name},#{host2.name}' #{duration} #{reason}" }
+        it "should create maintenance" do
+          expect(Zabbirc::Zabbix::Maintenance).to receive(:create).with(duration: duration_int, host_ids: hosts.collect(&:id), name: reason, without_data_collection: true)
+          expect(mock_message).to receive(:reply)
+          maintenance_command.run
+        end
+      end
     end
 
     context "host groups" do
@@ -84,6 +93,15 @@ describe Zabbirc::Irc::MaintenanceCommand do
         expect(Zabbirc::Zabbix::Maintenance).to receive(:create).with(duration: duration_int, host_group_ids: host_groups.collect(&:id), name: reason)
         expect(mock_message).to receive(:reply)
         maintenance_command.run
+      end
+
+      context "without data collection" do
+        let(:cmd) { "no-data hostgroups '#{host_group1.name},#{host_group2.name}' #{duration} #{reason}" }
+        it "should create maintenance" do
+          expect(Zabbirc::Zabbix::Maintenance).to receive(:create).with(duration: duration_int, host_group_ids: host_groups.collect(&:id), name: reason, without_data_collection: true)
+          expect(mock_message).to receive(:reply)
+          maintenance_command.run
+        end
       end
     end
 
