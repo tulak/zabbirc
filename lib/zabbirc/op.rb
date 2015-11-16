@@ -69,6 +69,7 @@ module Zabbirc
       return false if host_settings(:notify, host_groups).all?{|x| x == false }
       return false if @notified_events.key? event.id
       return false if event.value == :ok and host_settings(:notify_recoveries, host_groups).all?{|x| x == false }
+      return false if event.maintenance?
       interesting_priorities(host_groups).any? do |interesting_priority|
         event.priority >= interesting_priority
       end

@@ -60,6 +60,21 @@ module Zabbirc
         acknowledged.to_i == 1
       end
 
+      def maintenance?
+        maintenace_host_ids = Maintenance.cached(created_at).flat_map{|m| m.hosts.map(&:id) }
+        event_host_ids = hosts.flat_map(&:id)
+        return true if (maintenace_host_ids & event_host_ids).any?
+
+        maintenace_group_ids = Maintenance.cached(created_at).flat_map{|m| m.groups.map(&:id) }
+        event_group_ids = host_groups.flat_map(&:id)
+        return true if (maintenace_group_ids & event_group_ids).any?
+        false
+      end
+
+      def maintenance_label
+        " [MAINT]" if maintenance?
+      end
+
       def created_at
         Time.at(clock.to_i)
       end
@@ -94,7 +109,7 @@ module Zabbirc
       end
 
       def label
-        format_label "|%sid| %time [%priority-code] %msg - %state"
+        format_label "|%sid| %time%maint [%priority-code] %msg - %state"
       end
 
       def format_label fmt
@@ -104,7 +119,8 @@ module Zabbirc
             gsub("%msg", "#{message}").
             gsub("%id", "#{id}").
             gsub("%sid", "#{shorten_id}").
-            gsub("%state", "#{state}")
+            gsub("%state", "#{state}").
+            gsub("%maint", "#{maintenance_label}")
       end
 
       def any_host_matches? regexp

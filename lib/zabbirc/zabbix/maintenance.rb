@@ -2,6 +2,7 @@ module Zabbirc
   module Zabbix
     class Maintenance < Resource::Base
 
+      CACHE_TTL = 1.minute
       has_many :hosts
       has_many :groups, class_name: "HostGroup"
 
@@ -46,6 +47,20 @@ module Zabbirc
         r["maintenanceids"].first
       end
 
+      def self.cached timestamp = nil
+        if @maintenances_timestamp and @maintenances_timestamp < CACHE_TTL.ago
+          @maintenances, @maintenances_timestamp = nil, nil
+        end
+        @maintenances_timestamp ||= Time.current
+        @maintenances ||= Maintenance.get(selectHosts: :extend, selectGroups: :extend)
+
+        if timestamp
+          @maintenances.select{|maintenance| maintenance.active_range.cover?(timestamp) }
+        else
+          @maintenances
+        end
+      end
+
       def shorten_id
         @shorten_id ||= Zabbirc.maintenances_id_shortener.get_shorten_id id
       end
@@ -56,6 +71,10 @@ module Zabbirc
 
       def active_till
         Time.at(super.to_i)
+      end
+
+      def active_range
+        active_since..active_till
       end
 
       def active?
