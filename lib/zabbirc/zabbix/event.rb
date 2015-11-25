@@ -35,7 +35,7 @@ module Zabbirc
       attr_reader :attrs
       attr_writer :host_groups
 
-      delegate :priority, :priority_code, to: :related_object
+      delegate :priority, :priority_code, :severity_label, to: :related_object
 
       def related_object
         raise AttributeError, "`source` attribute required" if @attrs[:source].blank?
@@ -72,7 +72,7 @@ module Zabbirc
       end
 
       def maintenance_label
-        " [MAINT]" if maintenance?
+        " $C,PURPLE [MAINT] $C" if maintenance?
       end
 
       def created_at
@@ -97,24 +97,34 @@ module Zabbirc
         @shorten_id ||= Zabbirc.events_id_shortener.get_shorten_id id
       end
 
-      alias_method :state, :value
+      def state
+        case value
+        when :ok then "$C,GREEN ok $C,RST"
+        when :problem then "$C,RED problem $C,RST"
+        else
+          value
+        end
+      end
 
       def message
         desc = related_object.description
-        if desc.include?("{HOST.NAME}")
-          desc.sub("{HOST.NAME}", hosts.collect(&:host).join(', '))
+        host_label_regexp = Regexp.union("{HOSTNAME}", "{HOST.NAME}")
+        host_names = "$U#{hosts.collect(&:host).join(', ')}$U,RST"
+        if desc =~ host_label_regexp
+          desc.sub(host_label_regexp, host_names)
         else
-          "#{desc} on #{hosts.collect(&:host).join(', ')}"
+          "#{desc} on #{host_names}"
         end
       end
 
       def label
-        format_label "|%sid| %time%maint [%priority-code] %msg - %state"
+        format_label "$C,PURPLE |%sid| $C,RST %time %severity%maint %msg - %state"
       end
 
       def format_label fmt
         fmt.gsub("%priority-code", "#{priority.code}").
             gsub("%priority-num", "#{priority.number}").
+            gsub("%severity", "#{severity_label}").
             gsub("%time", "#{created_at.to_formatted_s(:short)}").
             gsub("%msg", "#{message}").
             gsub("%id", "#{id}").

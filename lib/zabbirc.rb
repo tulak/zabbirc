@@ -26,6 +26,10 @@ module Zabbirc
   def self.maintenances_id_shortener
     @maintenances_id_shortener ||= IdShortener.new
   end
+
+  def self.rich_text_formatter
+    @rich_text_formatter ||= RichTextFormatter.new
+  end
 end
 
 require 'zabbirc/configuration'
@@ -36,3 +40,4 @@ require 'zabbirc/zabbix/resource/base'
 require_dir "zabbirc/zabbix/*.rb"
 require 'zabbirc/services/base'
 require_dir "zabbirc/services/*.rb"
+

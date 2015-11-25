@@ -59,6 +59,7 @@ module Zabbirc
                 when Zabbix::Event
                   object.label
                 end
+      message = Zabbirc.rich_text_formatter.format message
       group_by(&:primary_channel).each do |channel, ops|
         next if channel.nil?
         op_targets = ops.collect{|op| "#{op.nick}:" }.join(" ")

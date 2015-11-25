@@ -70,6 +70,7 @@ module Zabbirc
           "#{@op.nick}: #{options[:prefix]}#{m}"
         end.join("\n")
 
+        msg = Zabbirc.rich_text_formatter.format msg
         @message.reply msg
       end
 

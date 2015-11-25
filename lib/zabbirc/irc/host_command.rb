@@ -30,13 +30,13 @@ module Zabbirc
 
         triggers = Zabbix::Trigger.get(hostids: host.id, filter: {value: 1}, selectHosts: :extend)
         triggers = triggers.sort{|x,y| x.priority <=> y.priority }
-        msg = ["Host: #{host.name}"]
+        msg = ["$C,GREY Host: $C,RST #{host.name}"]
         if triggers.empty?
-          msg[0] << " - status: OK"
+          msg[0] << " - $C,GREY status: $C,GREEN OK$C,RST"
         else
-          msg[0] << " - status: #{triggers.size} problems"
+          msg[0] << " - $C,GREY status: $C,RED #{triggers.size} problems$C,RST"
           triggers.each do |trigger|
-            msg << "status: #{trigger.label}"
+            msg << "$C,GREY status: $C,RST #{trigger.label}"
           end
         end
         reply msg
