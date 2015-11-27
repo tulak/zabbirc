@@ -17,7 +17,7 @@ module Zabbirc
 
     private
     def tokenize msg
-      r = /\$(?<cmd>#{COMMANDS_REGEXP})(?<args>(,[a-zA-Z0-9_]+)*)(?<rest>(?:[\n\r]|.)*)/
+      r = /\$(?<cmd>#{COMMANDS_REGEXP})(?<args>(,[a-zA-Z0-9_]+)*)\$(?<rest>(?:[\n\r]|.)*)/
       match_data = msg.match(r)
       return [msg] if match_data.nil?
       args = match_data[:args].split(/,/).reject(&:blank?)
@@ -25,7 +25,7 @@ module Zabbirc
           match_data[:cmd].to_sym,
           args
       ].flatten
-      ([match_data.pre_match, cmd] + tokenize(match_data[:rest])).reject(&:blank?)
+      ([match_data.pre_match, cmd] + tokenize(match_data[:rest])).reject(&:nil?)
     end
 
   end

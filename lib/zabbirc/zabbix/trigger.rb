@@ -20,8 +20,8 @@ module Zabbirc
 
       def state
         case value
-        when :ok then "$C,GREEN ok $C,RST"
-        when :problem then "$C,RED problem $C,RST"
+        when :ok then "$C,GREEN$ok$C,RST$"
+        when :problem then "$C,RED$problem$C,RST$"
         else
           value
         end
@@ -29,7 +29,7 @@ module Zabbirc
 
       def message
         host_label_regexp = Regexp.union("{HOSTNAME}", "{HOST.NAME}")
-        host_names = "$U#{hosts.collect(&:host).join(', ')}$U,RST"
+        host_names = "$U$#{hosts.collect(&:host).join(', ')}$U,RST$"
         if description =~ host_label_regexp
           description.sub(host_label_regexp, host_names)
         else
@@ -42,12 +42,12 @@ module Zabbirc
       def severity_label
         code = priority.code
         case code
-        when :not_classified then "$C,GREY [#{code}] $C,RST"
-        when :information    then "$C,LIGHT_GREEN [#{code}] $C,RST"
-        when :warning        then "$C,YELLOW [#{code}] $C,RST"
-        when :average        then "$C,ORANGE [#{code}] $C,RST"
-        when :high           then "$C,RED [#{code}] $C,RST"
-        when :disaster       then "$C,BROWN [#{code}] $C,RST"
+        when :not_classified then "$C,GREY$[#{code}]$C,RST$"
+        when :information    then "$C,LIGHT_GREEN$[#{code}]$C,RST$"
+        when :warning        then "$C,YELLOW$[#{code}]$C,RST$"
+        when :average        then "$C,ORANGE$[#{code}]$C,RST$"
+        when :high           then "$C,RED$[#{code}]$C,RST$"
+        when :disaster       then "$C,BROWN$[#{code}]$C,RST$"
         end
       end
 

@@ -72,7 +72,7 @@ module Zabbirc
       end
 
       def maintenance_label
-        " $C,PURPLE [MAINT] $C" if maintenance?
+        " $C,PURPLE$[MAINT]$C,RST$" if maintenance?
       end
 
       def created_at
@@ -99,8 +99,8 @@ module Zabbirc
 
       def state
         case value
-        when :ok then "$C,GREEN ok $C,RST"
-        when :problem then "$C,RED problem $C,RST"
+        when :ok then "$C,GREEN$ok$C,RST$"
+        when :problem then "$C,RED$problem$C,RST$"
         else
           value
         end
@@ -109,7 +109,7 @@ module Zabbirc
       def message
         desc = related_object.description
         host_label_regexp = Regexp.union("{HOSTNAME}", "{HOST.NAME}")
-        host_names = "$U#{hosts.collect(&:host).join(', ')}$U,RST"
+        host_names = "$U$#{hosts.collect(&:host).join(', ')}$U,RST$"
         if desc =~ host_label_regexp
           desc.sub(host_label_regexp, host_names)
         else
@@ -118,7 +118,7 @@ module Zabbirc
       end
 
       def label
-        format_label "$C,PURPLE |%sid| $C,RST %time %severity%maint %msg - %state"
+        format_label "$C,PURPLE$|%sid|$C,RST$ %time %severity%maint %msg - %state"
       end
 
       def format_label fmt
