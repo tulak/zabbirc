@@ -12,4 +12,5 @@ Zabbirc.configure do |config|
   # config.events_check_interval = 10.seconds
   # config.notify_about_events_from_last = 5.minutes
   # config.default_events_priority = :high
+  # config.colors = true
 end

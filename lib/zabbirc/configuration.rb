@@ -25,6 +25,8 @@ module Zabbirc
     config_accessor :events_check_interval
     config_accessor :notify_about_events_from_last
 
+    config_accessor :colors
+
     def param_name
       config.param_name.respond_to?(:call) ? config.param_name.call : config.param_name
     end
@@ -55,5 +57,6 @@ module Zabbirc
 
     config.irc_server = "irc.freenode.org"
     config.irc_channels = ["#zabbirc-test", "#zabbirc-test-2"]
+    config.colors = true
   end
 end

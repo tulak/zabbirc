@@ -28,7 +28,10 @@ module Zabbirc
   end
 
   def self.rich_text_formatter
-    @rich_text_formatter ||= RichTextFormatter.new
+    @rich_text_formatter ||= begin
+      palette = (config.colors ? Palettes::Default : Palettes::Clean)
+      RichTextFormatter.new palette
+    end
   end
 end
 
