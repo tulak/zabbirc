@@ -84,11 +84,11 @@ module Zabbirc
       end
 
       def data_collection_label
-        " [NO-DATA-COL]" if maintenance_type.to_i == 1
+        " $C,ORANGE$[NO-DATA-COL]$C,RST$" if maintenance_type.to_i == 1
       end
 
       def label
-        format_label "|%sid|%data-collection-label %start -> %end >> %name %targets"
+        format_label "$C,PURPLE$|%sid|$C,RST$%data-collection-label %start $C,RED$->$C,RST$ %end $C,RED$>>$C,RST$ %name $C,ORANGE$%targets$C,RST$"
       end
 
       def format_label fmt

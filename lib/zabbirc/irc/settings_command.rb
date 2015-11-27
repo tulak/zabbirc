@@ -25,22 +25,22 @@ module Zabbirc
       def show
         inline = @op.setting.collect do |key, value|
           next if key == "host_groups"
-          "#{key}: #{value}"
+          "$C,BLUE_CYAN$#{key}:$C,RST$ #{value}"
         end.compact.join(", ")
 
-        reply "Default settings: #{inline}"
+        reply "$C,GREY$Default settings: $C,RST$#{inline}"
 
         host_group_options = []
         @op.setting.get(:host_groups).each do |group_id, options|
           if options.any?
             group = Zabbix::HostGroup.find(group_id)
-            group_options = options.collect{|k,v| "#{k}: #{v}" }.sort.join(", ")
-            host_group_options << " - #{group.name}: #{group_options}"
+            group_options = options.collect{|k,v| "$C,BLUE_CYAN$#{k}:$C,RST$ #{v}" }.sort.join(", ")
+            host_group_options << " - $C,ORANGE$#{group.name}: $C,RST$ #{group_options}"
           end
         end
 
         if host_group_options.any?
-          reply "Host group settings:"
+          reply "$C,GREY$Host group settings: $C,RST$"
           reply host_group_options
         end
       end
@@ -94,21 +94,22 @@ module Zabbirc
       end
 
       def set_value key, value, host_groups_flag, host_groups
+        key_label = "$C,BLUE_CYAN$#{key}$C,RST$"
         case host_groups_flag
         when :none
           @op.setting.set key, value
-          reply "setting `#{key}` has been set to `#{@op.setting.get key}`"
+          reply "setting `#{key_label}` has been set to `$C,BLUE_CYAN$#{@op.setting.get key}$C,RST$`"
         when :all
           @op.setting.set key, value
           host_groups.each do |host_group|
             @op.setting.set key, value, host_group_id: host_group.id
           end
-          reply "setting `#{key}` has been set to `#{@op.setting.get key}` for all host groups"
+          reply "setting `#{key_label}` has been set to `$C,BLUE_CYAN$#{@op.setting.get key}$C,RST$` for all host groups"
         when :some
           host_groups.each do |host_group|
             @op.setting.set key, value, host_group_id: host_group.id
           end
-          reply "setting `#{key}` has been set to `#{value}` for host groups: #{host_groups.collect(&:name).join(", ")}"
+          reply "setting `#{key_label}` has been set to `$C,BLUE_CYAN$#{value}$C,RST$` for host groups: $C,ORANGE$#{host_groups.collect(&:name).join(", ")}$C,ORANGE$"
         end
       end
 
