@@ -21,6 +21,8 @@ module Zabbirc
 
     config_accessor :irc_server
     config_accessor :irc_port
+    config_accessor :irc_ssl
+    config_accessor :irc_ssl_verify
     config_accessor :irc_channels
 
     config_accessor :events_check_interval
@@ -58,6 +60,8 @@ module Zabbirc
 
     config.irc_server = "irc.freenode.org"
     config.irc_port = 6667
+    config.irc_ssl = false
+    config.irc_ssl_verify = false
     config.irc_channels = ["#zabbirc-test", "#zabbirc-test-2"]
     config.colors = true
   end
