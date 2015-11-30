@@ -1,4 +1,4 @@
-Zabbirc
+Zabbirc [![Build Status](https://travis-ci.org/tulak/zabbirc.svg?branch=master)](https://travis-ci.org/tulak/zabbirc)
 =======
 
 IRC bot for Zabbix monitoring
