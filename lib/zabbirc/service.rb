@@ -22,8 +22,11 @@ module Zabbirc
       @cinch_bot = Cinch::Bot.new do
         configure do |c|
           c.server = Zabbirc.config.irc_server
+	  c.port = Zabbirc.config.irc_port
           c.channels = Zabbirc.config.irc_channels
           c.nick = "zabbirc"
+	  c.ssl.use = Zabbirc.config.irc_ssl
+	  c.ssl.verify = Zabbirc.config.irc_ssl_verify
           c.plugins.plugins = [Irc::Plugin]
         end
       end
