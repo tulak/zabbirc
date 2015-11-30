@@ -7,6 +7,9 @@ Zabbirc.configure do |config|
   ### IRC configurations
   # config.irc_server = "irc.freenode.org"
   # config.irc_channels = ["#zabbirc-test", "#zabbirc-test-2"]
+  # config.irc_port = 6667
+  # config.irc_ssl = false
+  # config.irc_ssl_verify = false
 
   ### Zabbirc configurations
   # config.events_check_interval = 10.seconds
